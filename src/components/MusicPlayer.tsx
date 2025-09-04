@@ -2,178 +2,89 @@
 
 import { useEffect, useRef, useState } from "react";
 
-type Props = {
-  src?: string;      // พาธไฟล์เสียง (เริ่มต้น: /music/theme.mp3)
-  autoPlay?: boolean; // true = พยายามเล่นทันทีหลังผู้ใช้คลิกครั้งแรก
-  loop?: boolean;     // เล่นวน
-};
-
-export default function MusicPlayer({
-  src = "/music/theme.mp3",
-  autoPlay = true,
-  loop = true,
-}: Props) {
+export default function MusicPlayer() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const [ready, setReady] = useState(false);
   const [playing, setPlaying] = useState(false);
-  const [muted, setMuted] = useState(false);
-  const [duration, setDuration] = useState(0);
-  const [current, setCurrent] = useState(0);
-  const [volume, setVolume] = useState(0.9);
-  const [error, setError] = useState<string | null>(null);
+  const [vol, setVol] = useState<number>(0.15);
 
-  // สร้าง <audio> และผูก event
+  // โหลดค่าที่บันทึกไว้
   useEffect(() => {
-    const audio = new Audio(src);
-    audioRef.current = audio;
-    audio.loop = loop;
-    audio.preload = "metadata";
-    audio.volume = volume;
-    audio.muted = muted;
+    if (typeof window === "undefined") return;
+    const savedVol = Number(localStorage.getItem("music.vol") ?? "0.15");
+    setVol(Number.isFinite(savedVol) ? savedVol : 0.15);
+    const on = localStorage.getItem("music.on") === "1";
+    setPlaying(on);
+  }, []);
 
-    const onLoaded = () => {
-      setDuration(audio.duration || 0);
-      setReady(true);
-    };
-    const onTime = () => setCurrent(audio.currentTime || 0);
-    const onEnded = () => setPlaying(false);
-    const onError = () => setError("โหลดไฟล์เสียงไม่สำเร็จ");
-
-    audio.addEventListener("loadedmetadata", onLoaded);
-    audio.addEventListener("timeupdate", onTime);
-    audio.addEventListener("ended", onEnded);
-    audio.addEventListener("error", onError);
-
-    // อนุญาตเล่นหลังผู้ใช้แตะครั้งแรก (ผ่าน autoplay policy)
-    let removeTap: (() => void) | undefined;
-    if (autoPlay) {
-      const handler = async () => {
-        try {
-          await audio.play();
-          setPlaying(true);
-        } catch {
-          // ถ้าเล่นไม่ได้ ให้รอให้ผู้ใช้กดปุ่ม Play เอง
-        } finally {
-          window.removeEventListener("pointerdown", handler, { capture: true } as any);
-        }
-      };
-      window.addEventListener("pointerdown", handler, { capture: true });
-      removeTap = () =>
-        window.removeEventListener("pointerdown", handler, { capture: true } as any);
+  // sync volume -> element + localStorage
+  useEffect(() => {
+    if (audioRef.current) audioRef.current.volume = vol;
+    if (typeof window !== "undefined") {
+      localStorage.setItem("music.vol", String(vol));
     }
+  }, [vol]);
 
-    return () => {
-      audio.pause();
-      audio.src = "";
-      audio.removeEventListener("loadedmetadata", onLoaded);
-      audio.removeEventListener("timeupdate", onTime);
-      audio.removeEventListener("ended", onEnded);
-      audio.removeEventListener("error", onError);
-      removeTap?.();
-    };
-  }, [src, loop, autoPlay]);
-
-  // sync volume/mute
-  useEffect(() => {
-    if (!audioRef.current) return;
-    audioRef.current.volume = volume;
-  }, [volume]);
-
-  useEffect(() => {
-    if (!audioRef.current) return;
-    audioRef.current.muted = muted;
-  }, [muted]);
-
-  const togglePlay = async () => {
-    if (!audioRef.current) return;
-    try {
-      if (playing) {
-        audioRef.current.pause();
-        setPlaying(false);
-      } else {
-        await audioRef.current.play();
+  async function toggle(): Promise<void> {
+    const el = audioRef.current;
+    if (!el) return;
+    if (playing) {
+      el.pause();
+      setPlaying(false);
+      localStorage.setItem("music.on", "0");
+    } else {
+      try {
+        await el.play();
         setPlaying(true);
+        localStorage.setItem("music.on", "1");
+      } catch {
+        // อาจโดน browser block ถ้ายังไม่มี user gesture
       }
-    } catch {
-      setError("เบราว์เซอร์บล็อกการเล่นเสียง ลองกดอีกครั้ง");
     }
-  };
-
-  const onSeek = (v: number) => {
-    if (!audioRef.current) return;
-    audioRef.current.currentTime = v;
-    setCurrent(v);
-  };
-
-  const fmt = (s: number) => {
-    if (!isFinite(s)) return "0:00";
-    const m = Math.floor(s / 60);
-    const ss = Math.floor(s % 60).toString().padStart(2, "0");
-    return `${m}:${ss}`;
-    };
+  }
 
   return (
-    <div className="fixed bottom-4 right-4 z-50">
-      <div className="w-[320px] rounded-2xl bg-black/70 text-white shadow-xl backdrop-blur p-3 space-y-2">
-        <div className="flex items-center justify-between">
-          <div className="text-sm font-semibold">Now Playing</div>
-          <div className="text-xs opacity-70">{ready ? "Ready" : "Loading…"}</div>
-        </div>
+    <div className="fixed bottom-4 right-4 z-50 group select-none">
+      <button
+        onClick={toggle}
+        title={playing ? "หยุดเพลง" : "เปิดเพลง"}
+        className={`h-12 w-12 rounded-full flex items-center justify-center shadow-lg ring-1 transition
+        ${
+          playing
+            ? "bg-emerald-600 hover:bg-emerald-700 ring-emerald-400/40 animate-pulse"
+            : "bg-zinc-800 hover:bg-zinc-700 ring-zinc-600/40"
+        }`}
+        aria-label={playing ? "หยุดเพลง" : "เปิดเพลง"}
+        type="button"
+      >
+        <span className="text-xl">{playing ? "⏸" : "🎵"}</span>
+      </button>
 
-        {/* Controls */}
-        <div className="flex items-center gap-2">
-          <button
-            onClick={togglePlay}
-            disabled={!ready}
-            className="px-3 py-1.5 rounded-lg bg-white/15 hover:bg-white/25 transition disabled:opacity-40"
-            aria-label={playing ? "Pause" : "Play"}
-          >
-            {playing ? "Pause" : "Play"}
-          </button>
-
-          <button
-            onClick={() => setMuted((m) => !m)}
-            disabled={!ready}
-            className="px-3 py-1.5 rounded-lg bg-white/15 hover:bg-white/25 transition disabled:opacity-40"
-            aria-label={muted ? "Unmute" : "Mute"}
-          >
-            {muted ? "Unmute" : "Mute"}
-          </button>
-        </div>
-
-        {/* Seek bar */}
-        <div className="flex items-center gap-2">
-          <span className="text-xs tabular-nums w-10 text-right">{fmt(current)}</span>
-          <input
-            type="range"
-            min={0}
-            max={duration || 0}
-            step={0.1}
-            value={Math.min(current, duration || 0)}
-            onChange={(e) => onSeek(parseFloat(e.target.value))}
-            className="flex-1 accent-white"
-            disabled={!ready || !isFinite(duration)}
-          />
-          <span className="text-xs tabular-nums w-10">{fmt(duration)}</span>
-        </div>
-
-        {/* Volume */}
-        <div className="flex items-center gap-2">
-          <span className="text-xs opacity-75 w-12">Volume</span>
-          <input
-            type="range"
-            min={0}
-            max={1}
-            step={0.01}
-            value={muted ? 0 : volume}
-            onChange={(e) => setVolume(parseFloat(e.target.value))}
-            className="flex-1 accent-white"
-            disabled={!ready}
-          />
-        </div>
-
-        {error && <div className="text-xs text-red-300">{error}</div>}
+      {/* volume popover */}
+      <div
+        className="absolute right-14 bottom-1 opacity-0 pointer-events-none
+                   group-hover:opacity-100 group-hover:pointer-events-auto
+                   transition bg-zinc-900/90 backdrop-blur border border-zinc-700
+                   rounded-xl px-3 py-2 flex items-center gap-2"
+      >
+        <span className="text-xs text-gray-300">เสียง</span>
+        <input
+          type="range"
+          min={0}
+          max={1}
+          step={0.01}
+          value={vol}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+            setVol(parseFloat(e.target.value))
+          }
+          className="w-28"
+          aria-label="ปรับความดัง"
+        />
       </div>
+
+      <audio ref={audioRef} loop preload="auto" playsInline>
+        {/* ตรวจให้ชัวร์ว่าไฟล์นี้อยู่ที่ /public/music/bg-music.mp3 */}
+        <source src="/music/bg-music.mp3" type="audio/mpeg" />
+      </audio>
     </div>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link"; // ✅ เพิ่มเข้ามา
 
 type Product = {
   id: string;
@@ -49,10 +50,11 @@ export default function ProductsPage() {
   return (
     <main className="min-h-screen bg-black text-white">
       <header className="max-w-6xl mx-auto px-4 py-6 flex items-center justify-between">
-        <a href="/" className="text-lg">← กลับหน้าแรก</a>
-        <a href="/cart" className="relative bg-blue-600 px-4 py-2 rounded-xl">
+        {/* ⛳ ลิงก์ภายใน ใช้ Link */}
+        <Link href="/" className="text-lg">← กลับหน้าแรก</Link>
+        <Link href="/cart" className="relative bg-blue-600 px-4 py-2 rounded-xl hover:bg-blue-700">
           ตะกร้า ({countInCart})
-        </a>
+        </Link>
       </header>
 
       <section className="max-w-6xl mx-auto px-4 pb-20">

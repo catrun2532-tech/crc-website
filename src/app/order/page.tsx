@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import Link from "next/link";
 
 export default function OrderPage() {
   const [name, setName] = useState("");
@@ -8,8 +9,13 @@ export default function OrderPage() {
   const [service, setService] = useState("ลงวินโดว์");
   const [details, setDetails] = useState("");
 
-  const lineText = encodeURIComponent(
-    `สวัสดีครับ บังแม็ก\nชื่อ: ${name}\nโทร: ${phone}\nบริการ: ${service}\nรายละเอียด: ${details}`
+  // คำนวณข้อความ LINE เฉพาะเมื่อค่าฟอร์มเปลี่ยน
+  const lineText = useMemo(
+    () =>
+      encodeURIComponent(
+        `สวัสดีครับ บังแม็ก\nชื่อ: ${name}\nโทร: ${phone}\nบริการ: ${service}\nรายละเอียด: ${details}`
+      ),
+    [name, phone, service, details]
   );
 
   return (
@@ -38,6 +44,7 @@ export default function OrderPage() {
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               placeholder="เช่น 093-478-3005"
+              inputMode="tel"
             />
           </div>
 
@@ -70,12 +77,15 @@ export default function OrderPage() {
             <a
               href={`https://line.me/ti/p/~catruncpu?text=${lineText}`}
               className="bg-green-600 hover:bg-green-700 px-5 py-3 rounded-xl"
+              target="_blank"
+              rel="noopener noreferrer"
             >
               ทัก LINE ส่งรายละเอียด
             </a>
             <a
               href="tel:0934783005"
               className="bg-pink-600 hover:bg-pink-700 px-5 py-3 rounded-xl"
+              rel="noopener noreferrer"
             >
               โทรหาเรา
             </a>
@@ -87,7 +97,9 @@ export default function OrderPage() {
         </div>
 
         <div className="mt-10">
-          <a href="/" className="text-blue-400 hover:underline">← กลับหน้าแรก</a>
+          <Link href="/" className="text-blue-400 hover:underline">
+            ← กลับหน้าแรก
+          </Link>
         </div>
       </section>
     </main>

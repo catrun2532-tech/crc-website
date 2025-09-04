@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
+import Image from "next/image";
 
 type Product = {
   id: string;
@@ -23,23 +25,31 @@ const STORAGE_KEY = "cart";
 
 function loadCart(): CartItem[] {
   if (typeof window === "undefined") return [];
-  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); }
-  catch { return []; }
+  try {
+    return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]") as CartItem[];
+  } catch {
+    return [];
+  }
 }
 function saveCart(items: CartItem[]) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+  if (typeof window !== "undefined") {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+  }
 }
 
 export default function ProductsPage() {
   const [cart, setCart] = useState<CartItem[]>([]);
 
-  useEffect(() => { setCart(loadCart()); }, []);
+  useEffect(() => {
+    setCart(loadCart());
+  }, []);
+
   const countInCart = cart.reduce((n, i) => n + i.qty, 0);
 
   function addToCart(id: string) {
-    setCart(prev => {
+    setCart((prev) => {
       const next = [...prev];
-      const it = next.find(i => i.id === id);
+      const it = next.find((i) => i.id === id);
       if (it) it.qty += 1;
       else next.push({ id, qty: 1 });
       saveCart(next);
@@ -50,25 +60,45 @@ export default function ProductsPage() {
   return (
     <main className="min-h-screen bg-black text-white">
       <header className="max-w-6xl mx-auto px-4 py-6 flex items-center justify-between">
-        <a href="/" className="text-lg">← หน้าแรก</a>
-        <a href="/cart" className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-xl">
+        <Link href="/" className="text-lg">
+          ← หน้าแรก
+        </Link>
+        <Link
+          href="/cart"
+          className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-xl"
+        >
           ตะกร้า ({countInCart})
-        </a>
+        </Link>
       </header>
 
       <section className="max-w-6xl mx-auto px-4 pb-20">
         <h1 className="text-3xl md:text-4xl font-bold mb-6">สินค้า / บริการ</h1>
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
-          {PRODUCTS.map(p => (
-            <div key={p.id} className="bg-zinc-900 rounded-2xl overflow-hidden border border-zinc-800">
-              <img src={p.img} alt={p.name} className="w-full h-40 object-cover" />
+          {PRODUCTS.map((p) => (
+            <div
+              key={p.id}
+              className="bg-zinc-900 rounded-2xl overflow-hidden border border-zinc-800"
+            >
+              <div className="relative w-full h-40">
+                <Image
+                  src={p.img} // ต้องมีไฟล์ใน /public/uploads/*
+                  alt={p.name}
+                  fill
+                  sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                  className="object-cover"
+                  priority={false}
+                />
+              </div>
               <div className="p-4">
                 <h3 className="font-semibold">{p.name}</h3>
-                <p className="text-gray-300 mt-1">{p.price.toLocaleString()} บาท</p>
+                <p className="text-gray-300 mt-1">
+                  {p.price.toLocaleString("th-TH")} บาท
+                </p>
                 <button
                   onClick={() => addToCart(p.id)}
                   className="mt-3 w-full bg-emerald-600 hover:bg-emerald-700 py-2 rounded-xl"
+                  type="button"
                 >
                   หยิบใส่ตะกร้า
                 </button>
@@ -78,7 +108,8 @@ export default function ProductsPage() {
         </div>
 
         <p className="text-sm text-gray-400 mt-6">
-          *วางรูปไว้ที่ <code>/public/uploads/</code> แล้วอ้างด้วย <code>/uploads/ชื่อไฟล์.jpg</code>
+          *วางรูปไว้ที่ <code>/public/uploads/</code> แล้วอ้างด้วย{" "}
+          <code>/uploads/ชื่อไฟล์.jpg</code>
         </p>
       </section>
     </main>

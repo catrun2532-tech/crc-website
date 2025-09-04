@@ -1,4 +1,7 @@
 // src/app/page.tsx
+import Link from "next/link";
+import Image from "next/image";
+
 // ===================== CONFIG (แก้ไขค่าตรงนี้ได้เลย) =====================
 const BRAND = {
   title: "C.R.C. คอมพิวเตอร์ ",
@@ -15,12 +18,7 @@ const VIDEO = {
   src: "/video/promo.mp4", // วางไฟล์ที่ public/video/promo.mp4
 };
 
-const GALLERY: string[] = [
-  "pic1.jpg",
-  "pic2.jpg",
-  "pic3.jpg",
-  "pic4.jpg",
-]; // ใส่เฉพาะชื่อไฟล์ที่อยู่ใน public/uploads/
+const GALLERY: string[] = ["pic1.jpg", "pic2.jpg", "pic3.jpg", "pic4.jpg"]; // ใส่เฉพาะชื่อไฟล์ที่อยู่ใน public/uploads/
 
 const SERVICES: { name: string; price: string; desc?: string }[] = [
   { name: "ลงวินโดว์ + โปรแกรมพื้นฐาน", price: "500–800 บาท" },
@@ -43,12 +41,23 @@ export default function Page() {
         <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="font-bold tracking-wide">บริษัทแคทรันซีพียู จำกัด</div>
           <nav className="hidden md:flex gap-6 text-sm text-gray-300">
-            
-            <a href="/order" className="hover:text-white">นัดซ่อม</a>
-            <a href="/products" className="hover:text-white">สินค้า</a>
-            <a href="#services" className="hover:text-white">บริการ/ราคา</a>
-            <a href="#contact" className="hover:text-white">ติดต่อ</a>
-            <a href="/cart" className="hover:underline">ตะกร้า</a>
+            {/* ใช้ Link สำหรับเพจภายใน */}
+            <Link href="/order" className="hover:text-white">
+              นัดซ่อม
+            </Link>
+            <Link href="/products" className="hover:text-white">
+              สินค้า
+            </Link>
+            {/* ลิงก์ภายในหน้า (#) ใช้ a ได้ */}
+            <a href="#services" className="hover:text-white">
+              บริการ/ราคา
+            </a>
+            <a href="#contact" className="hover:text-white">
+              ติดต่อ
+            </a>
+            <Link href="/cart" className="hover:underline">
+              ตะกร้า
+            </Link>
           </nav>
         </div>
       </header>
@@ -81,9 +90,12 @@ export default function Page() {
             >
               โทร: 0960956981
             </a>
+            {/* เว็บไซต์ภายนอกใช้ a ได้ */}
             <a
               href={BRAND.website}
               className="px-5 py-3 rounded-2xl bg-zinc-800 hover:bg-zinc-700 transition"
+              target="_blank"
+              rel="noopener noreferrer"
             >
               {BRAND.website.replace("https://", "")}
             </a>
@@ -116,13 +128,15 @@ export default function Page() {
           {GALLERY.map((f) => (
             <div
               key={f}
-              className="w-full aspect-square overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900"
+              className="relative w-full aspect-square overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900"
             >
-              <img
+              <Image
                 src={`/uploads/${f}`}
                 alt={f}
-                className="w-full h-full object-cover"
-                loading="lazy"
+                fill
+                sizes="(min-width:1024px) 25vw, (min-width:768px) 33vw, 50vw"
+                className="object-cover"
+                priority={false}
               />
             </div>
           ))}
@@ -147,9 +161,7 @@ export default function Page() {
                   <div className="text-base md:text-lg font-medium">{s.name}</div>
                   <div className="text-sm md:text-base text-gray-300">{s.price}</div>
                 </div>
-                {s.desc && (
-                  <p className="text-sm text-gray-400 mt-2">{s.desc}</p>
-                )}
+                {s.desc && <p className="text-sm text-gray-400 mt-2">{s.desc}</p>}
               </li>
             ))}
           </ul>
@@ -200,9 +212,7 @@ export default function Page() {
           <div>
             © {new Date().getFullYear()} C.R.C. คอมพิวเตอร์ — บริการจริงใจ บังแม็กจัดให้
           </div>
-          <div className="text-gray-500">
-            ปรับเนื้อหาได้ที่ส่วน CONFIG ด้านบนของไฟล์
-          </div>
+          <div className="text-gray-500">ปรับเนื้อหาได้ที่ส่วน CONFIG ด้านบนของไฟล์</div>
         </div>
       </footer>
     </main>
