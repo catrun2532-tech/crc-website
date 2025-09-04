@@ -1,103 +1,217 @@
-import Image from "next/image";
+// src/app/page.tsx
+// ===================== CONFIG (แก้ไขค่าตรงนี้ได้เลย) =====================
+const BRAND = {
+  title: "C.R.C. คอมพิวเตอร์ ",
+  tagline:
+    "รับซ่อมโน๊ตบุ๊ค/คอมพิวเตอร์ ทุกรุ่นทุกอาการ ลงวินโดว์ กู้ข้อมูล อัปเกรด SSD/RAM",
+  facebook: "https://www.facebook.com/catruncpu",
+  line: "https://line.me/ti/p/~catruncpu",
+  phone: "0960956981",
+  website: "https://www.catruncpu.com",
+  addressShort: "ค้นหา: catruncpu บนแผนที่", // ข้อความใต้แผนที่
+};
 
-export default function Home() {
+const VIDEO = {
+  src: "/video/promo.mp4", // วางไฟล์ที่ public/video/promo.mp4
+};
+
+const GALLERY: string[] = [
+  "pic1.jpg",
+  "pic2.jpg",
+  "pic3.jpg",
+  "pic4.jpg",
+]; // ใส่เฉพาะชื่อไฟล์ที่อยู่ใน public/uploads/
+
+const SERVICES: { name: string; price: string; desc?: string }[] = [
+  { name: "ลงวินโดว์ + โปรแกรมพื้นฐาน", price: "500–800 บาท" },
+  { name: "อัปเกรด SSD (ย้ายข้อมูล)", price: "สอบถามราคา" },
+  { name: "ทำความสะอาด + เปลี่ยนซิลิโคน", price: "400–700 บาท" },
+  { name: "กู้ข้อมูล/ไฟล์หาย", price: "ประเมินก่อนซ่อม" },
+];
+// ========================================================================
+
+export const metadata = {
+  title: BRAND.title,
+  description: BRAND.tagline,
+};
+
+export default function Page() {
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <main className="min-h-screen bg-black text-white">
+      {/* NAV */}
+      <header className="sticky top-0 z-50 backdrop-blur bg-black/50 border-b border-zinc-900">
+        <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+          <div className="font-bold tracking-wide">บริษัทแคทรันซีพียู จำกัด</div>
+          <nav className="hidden md:flex gap-6 text-sm text-gray-300">
+            
+            <a href="/order" className="hover:text-white">นัดซ่อม</a>
+            <a href="/products" className="hover:text-white">สินค้า</a>
+            <a href="#services" className="hover:text-white">บริการ/ราคา</a>
+            <a href="#contact" className="hover:text-white">ติดต่อ</a>
+            <a href="/cart" className="hover:underline">ตะกร้า</a>
+          </nav>
+        </div>
+      </header>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
+      {/* HERO */}
+      <section id="about" className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(255,255,255,0.08),rgba(0,0,0,0))]" />
+        <div className="max-w-6xl mx-auto px-4 py-20 relative">
+          <h1 className="text-4xl md:text-6xl font-extrabold leading-tight">
+            {BRAND.title}
+          </h1>
+          <p className="mt-5 text-lg text-gray-300 max-w-3xl">{BRAND.tagline}</p>
+
+          <div className="mt-8 flex flex-wrap gap-3">
+            <a
+              href={BRAND.facebook}
+              className="px-5 py-3 rounded-2xl bg-blue-600 hover:bg-blue-500 transition"
+            >
+              Facebook: catruncpu
+            </a>
+            <a
+              href={BRAND.line}
+              className="px-5 py-3 rounded-2xl bg-green-600 hover:bg-green-500 transition"
+            >
+              LINE: catruncpu
+            </a>
+            <a
+              href={`tel:${BRAND.phone}`}
+              className="px-5 py-3 rounded-2xl bg-pink-600 hover:bg-pink-500 transition"
+            >
+              โทร: 0960956981
+            </a>
+            <a
+              href={BRAND.website}
+              className="px-5 py-3 rounded-2xl bg-zinc-800 hover:bg-zinc-700 transition"
+            >
+              {BRAND.website.replace("https://", "")}
+            </a>
+          </div>
+        </div>
+      </section>
+
+      {/* VIDEO 16:9 */}
+      <section id="video" className="bg-zinc-900">
+        <div className="max-w-6xl mx-auto px-4 py-12">
+          <h2 className="text-2xl font-semibold mb-4">วิดีโอแนะนำร้าน</h2>
+          <div className="w-full aspect-video rounded-2xl border border-zinc-800 overflow-hidden">
+            <video
+              className="w-full h-full object-cover"
+              src={VIDEO.src}
+              controls
+              playsInline
             />
-            Deploy now
+          </div>
+          <p className="mt-2 text-sm text-gray-400">
+            เปลี่ยนไฟล์ได้เองที่ <code>/public/video/promo.mp4</code>
+          </p>
+        </div>
+      </section>
+
+      {/* GALLERY 1:1 */}
+      <section id="gallery" className="max-w-6xl mx-auto px-4 py-12">
+        <h2 className="text-2xl font-semibold">ผลงาน / บรรยากาศร้าน</h2>
+        <div className="mt-6 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {GALLERY.map((f) => (
+            <div
+              key={f}
+              className="w-full aspect-square overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900"
+            >
+              <img
+                src={`/uploads/${f}`}
+                alt={f}
+                className="w-full h-full object-cover"
+                loading="lazy"
+              />
+            </div>
+          ))}
+        </div>
+        <p className="mt-3 text-sm text-gray-400">
+          วางรูปใน <code>/public/uploads/</code> แล้วแก้ชื่อไฟล์ในตัวแปร{" "}
+          <code>GALLERY</code> ด้านบน
+        </p>
+      </section>
+
+      {/* SERVICES & PRICES */}
+      <section id="services" className="bg-zinc-900">
+        <div className="max-w-6xl mx-auto px-4 py-12">
+          <h2 className="text-2xl font-semibold">บริการยอดนิยม & ราคาโดยประมาณ</h2>
+          <ul className="mt-6 grid md:grid-cols-2 gap-4">
+            {SERVICES.map((s, i) => (
+              <li
+                key={i}
+                className="rounded-2xl border border-zinc-800 bg-zinc-950/60 p-5"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="text-base md:text-lg font-medium">{s.name}</div>
+                  <div className="text-sm md:text-base text-gray-300">{s.price}</div>
+                </div>
+                {s.desc && (
+                  <p className="text-sm text-gray-400 mt-2">{s.desc}</p>
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      {/* CONTACT */}
+      <section id="contact" className="max-w-6xl mx-auto px-4 py-12">
+        <h2 className="text-2xl font-semibold">ติดต่อเรา</h2>
+        <div className="mt-6 grid md:grid-cols-3 gap-4">
+          <a
+            className="rounded-2xl border border-zinc-800 bg-zinc-900 p-4 hover:bg-zinc-800 transition"
+            href={`tel:${BRAND.phone}`}
+          >
+            📞 โทร {formatPhone(BRAND.phone)}
           </a>
           <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            className="rounded-2xl border border-zinc-800 bg-zinc-900 p-4 hover:bg-zinc-800 transition"
+            href={BRAND.line}
           >
-            Read our docs
+            💬 LINE: catruncpu
+          </a>
+          <a
+            className="rounded-2xl border border-zinc-800 bg-zinc-900 p-4 hover:bg-zinc-800 transition"
+            href={BRAND.facebook}
+          >
+            👍 Facebook: catruncpu
           </a>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
+      </section>
+
+      {/* MAP */}
+      <section className="max-w-6xl mx-auto px-4 pb-14">
+        <h2 className="text-2xl font-semibold">แผนที่ร้าน</h2>
+        <div className="mt-4 aspect-video rounded-2xl overflow-hidden border border-zinc-800">
+          <iframe
+            className="w-full h-full"
+            loading="lazy"
+            src="https://www.google.com/maps?q=catruncpu&output=embed"
           />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
+        </div>
+        <p className="mt-2 text-sm text-gray-400">{BRAND.addressShort}</p>
+      </section>
+
+      {/* FOOTER */}
+      <footer className="border-t border-zinc-900">
+        <div className="max-w-6xl mx-auto px-4 py-8 text-sm text-gray-400 flex flex-col md:flex-row items-start md:items-center justify-between gap-2">
+          <div>
+            © {new Date().getFullYear()} C.R.C. คอมพิวเตอร์ — บริการจริงใจ บังแม็กจัดให้
+          </div>
+          <div className="text-gray-500">
+            ปรับเนื้อหาได้ที่ส่วน CONFIG ด้านบนของไฟล์
+          </div>
+        </div>
       </footer>
-    </div>
+    </main>
   );
+}
+
+// utils เล็กๆ: ฟอร์แมตเบอร์โทร 093-xxx-xxxx
+function formatPhone(p: string) {
+  const t = p.replace(/\D/g, "");
+  if (t.length === 10) return `${t.slice(0, 3)}-${t.slice(3, 6)}-${t.slice(6)}`;
+  return p;
 }

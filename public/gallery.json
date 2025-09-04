@@ -1,0 +1,46 @@
+"use client";
+import { useEffect, useState } from "react";
+
+export default function Page() {
+  const [gallery, setGallery] = useState<string[]>([]);
+
+  useEffect(() => {
+    fetch("/gallery.json")
+      .then((res) => res.json())
+      .then((data) => setGallery(data.files || []))
+      .catch(() => setGallery([]));
+  }, []);
+
+  return (
+    <main className="min-h-screen bg-black text-white">
+      {/* ... HERO, VIDEO ฯลฯ ... */}
+
+      {/* GALLERY */}
+      <section id="gallery" className="max-w-6xl mx-auto px-4 py-12 scroll-mt-16">
+        <h2 className="text-2xl font-semibold">ผลงาน / บรรยากาศร้าน</h2>
+        <div className="mt-6 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {gallery.map((f) => (
+            <div
+              key={f}
+              className="w-full aspect-square overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900"
+            >
+              <img
+                src={`/uploads/${f}`}
+                alt={f}
+                className="w-full h-full object-cover"
+                loading="lazy"
+                onError={(e) => {
+                  (e.currentTarget as HTMLImageElement).style.display = "none";
+                  e.currentTarget.parentElement!.classList.add("bg-zinc-800");
+                }}
+              />
+            </div>
+          ))}
+        </div>
+        <p className="mt-3 text-sm text-gray-400">
+          เพิ่ม/ลบรูปได้ที่ <code>/public/uploads/</code> และแก้ไขชื่อไฟล์ใน <code>/public/gallery.json</code>
+        </p>
+      </section>
+    </main>
+  );
+}
