@@ -1,114 +1,83 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { jsPDF } from "jspdf";
 
 export default function OrderPage() {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
-  const [service, setService] = useState("ลงวินโดว์");
+  const [service, setService] = useState("");
   const [details, setDetails] = useState("");
 
-  // ✅ ฟังก์ชันสร้าง PDF
   const handleGeneratePDF = () => {
     const doc = new jsPDF();
 
-    doc.setFont("Helvetica", "normal");
+    // หัวเอกสาร
+    doc.setFont("Helvetica", "bold");
+    doc.setFontSize(16);
+    doc.text("ใบงาน / ใบรับซ่อม", 20, 20);
 
-    doc.text("ใบงาน / แจ้งซ่อม", 20, 20);
+    // เนื้อหา
+    doc.setFont("Helvetica", "normal");
+    doc.setFontSize(12);
+
     doc.text(`ชื่อ: ${name || "-"}`, 20, 40);
-    doc.text(`โทร: ${phone || "-"}`, 20, 50);
+    doc.text(`เบอร์: ${phone || "-"}`, 20, 50);
     doc.text(`บริการ: ${service || "-"}`, 20, 60);
 
-    doc.text("รายละเอียด:", 20, 70);
-
+    // รายละเอียด (ตัดบรรทัด)
     const splitDetails = doc.splitTextToSize(details || "-", 170);
+    doc.text("รายละเอียด:", 20, 70);
     doc.text(splitDetails, 20, 80);
 
+    // วันที่
+    const today = new Date().toLocaleString();
+    doc.text(`วันที่: ${today}`, 20, 120);
+
+    // บันทึกไฟล์
     doc.save(`order-${name || "customer"}.pdf`);
   };
 
   return (
-    <main className="min-h-screen bg-black text-white">
-      <section className="max-w-2xl mx-auto px-4 py-12">
-        <h1 className="text-3xl font-bold">สั่งงาน / แจ้งซ่อม</h1>
-        <p className="mt-2 text-gray-400">
-          กรอกข้อมูลแล้วกดบันทึก หรือโทรหาเราได้เลย
-        </p>
+    <main className="min-h-screen bg-black text-white p-6">
+      <h1 className="text-2xl mb-4">สร้างใบงาน</h1>
 
-        <div className="mt-8 space-y-4">
-          <div>
-            <label className="block mb-1 text-sm text-gray-300">ชื่อ</label>
-            <input
-              className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="เช่น สมชาย"
-            />
-          </div>
+      <div className="flex flex-col gap-3 max-w-md">
+        <input
+          className="p-2 text-black"
+          placeholder="ชื่อ"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
 
-          <div>
-            <label className="block mb-1 text-sm text-gray-300">เบอร์ติดต่อ</label>
-            <input
-              className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              placeholder="เช่น 093-478-3005"
-              inputMode="tel"
-            />
-          </div>
+        <input
+          className="p-2 text-black"
+          placeholder="เบอร์โทร"
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+        />
 
-          <div>
-            <label className="block mb-1 text-sm text-gray-300">บริการ</label>
-            <select
-              className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3"
-              value={service}
-              onChange={(e) => setService(e.target.value)}
-            >
-              <option>ลงวินโดว์</option>
-              <option>กู้ข้อมูล</option>
-              <option>อัปเกรด SSD/RAM</option>
-              <option>ทำความสะอาด/เปลี่ยนซิลิโคน</option>
-              <option>ปัญหาอื่นๆ</option>
-            </select>
-          </div>
+        <input
+          className="p-2 text-black"
+          placeholder="บริการ"
+          value={service}
+          onChange={(e) => setService(e.target.value)}
+        />
 
-          <div>
-            <label className="block mb-1 text-sm text-gray-300">รายละเอียด</label>
-            <textarea
-              className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 min-h-[120px]"
-              value={details}
-              onChange={(e) => setDetails(e.target.value)}
-              placeholder="อาการเครื่อง / รุ่น / สิ่งที่ต้องการให้ทำ"
-            />
-          </div>
+        <textarea
+          className="p-2 text-black"
+          placeholder="รายละเอียดงาน"
+          value={details}
+          onChange={(e) => setDetails(e.target.value)}
+        />
 
-          {/* ปุ่มเหลือแค่ โทร + PDF */}
-          <div className="flex gap-3 pt-2 flex-wrap">
-            <a
-              href="tel:0934783005"
-              className="bg-pink-600 hover:bg-pink-700 px-5 py-3 rounded-xl"
-            >
-              โทรหาเรา
-            </a>
-
-            <button
-              type="button"
-              onClick={handleGeneratePDF}
-              className="bg-blue-500 hover:bg-blue-600 px-5 py-3 rounded-xl"
-            >
-              📄 บันทึกใบงาน
-            </button>
-          </div>
-        </div>
-
-        <div className="mt-10">
-          <Link href="/" className="text-blue-400 hover:underline">
-            ← กลับหน้าแรก
-          </Link>
-        </div>
-      </section>
+        <button
+          onClick={handleGeneratePDF}
+          className="bg-blue-500 p-2 rounded"
+        >
+          บันทึกเป็น PDF
+        </button>
+      </div>
     </main>
   );
 }
