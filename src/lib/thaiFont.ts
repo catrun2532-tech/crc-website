@@ -1,2 +1,2 @@
 // src/lib/thaiFont.ts
-export const thaiFontBase64 = "รหัสBase64ของคุณที่นี่";
+export const thaiFontBase64 = "export const thaiFontBase64 = "AAEAAAARAQAABAAQR0RFRgBAADsAAAEcAAAAFkdQT1N0G8S5AAACWAAAAB5HU0VChSBe/QAAAqAAAAA0T1MvMlkS6uEAAAGUAAAAYGNtYXBH3pAtAAADGAAAAGxjdnQgAAAALwAAAnQAAAAIZnBnbV9cl9oAAAnMAAAAnGdhc3AA";";
