@@ -8,23 +8,19 @@
     "start": "next start",
     "lint": "eslint"
   },
-    "devDependencies": {
-    "typescript": "^5",
-    "@types/node": "^20",
-    "@types/react": "^18",
-    "@types/react-dom": "^18",
-    "postcss": "^8",
-    "tailwindcss": "^3.4.1",
-    "eslint": "^8",
-    "eslint-config-next": "14.2.23"
-  }
+  "dependencies": {
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "next": "14.2.23",
+    "jspdf": "^2.5.1"
+  },
   "devDependencies": {
     "typescript": "^5",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "postcss": "^8",
-    "tailwindcss": "^3",
+    "tailwindcss": "^3.4.1",
     "eslint": "^8",
     "eslint-config-next": "14.2.23"
   }
