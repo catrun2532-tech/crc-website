@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { jsPDF } from "jspdf";
 
 export default function OrderPage() {
   const [name, setName] = useState("");
@@ -10,8 +9,10 @@ export default function OrderPage() {
   const [service, setService] = useState("ลงวินโดว์");
   const [details, setDetails] = useState("");
 
-  // ✅ ฟังก์ชันสร้าง PDF
-  const handleGeneratePDF = () => {
+  // ✅ โหลด jsPDF ตอนกดปุ่ม (แก้ปัญหา deploy fail)
+  const handleGeneratePDF = async () => {
+    const { jsPDF } = await import("jspdf");
+
     const doc = new jsPDF();
 
     doc.setFont("Helvetica", "normal");
@@ -26,6 +27,9 @@ export default function OrderPage() {
     const splitDetails = doc.splitTextToSize(details || "-", 170);
     doc.text(splitDetails, 20, 80);
 
+    const today = new Date().toLocaleString();
+    doc.text(`วันที่: ${today}`, 20, 120);
+
     doc.save(`order-${name || "customer"}.pdf`);
   };
 
@@ -38,6 +42,7 @@ export default function OrderPage() {
         </p>
 
         <div className="mt-8 space-y-4">
+          {/* ชื่อ */}
           <div>
             <label className="block mb-1 text-sm text-gray-300">ชื่อ</label>
             <input
@@ -48,6 +53,7 @@ export default function OrderPage() {
             />
           </div>
 
+          {/* เบอร์ */}
           <div>
             <label className="block mb-1 text-sm text-gray-300">เบอร์ติดต่อ</label>
             <input
@@ -59,6 +65,7 @@ export default function OrderPage() {
             />
           </div>
 
+          {/* บริการ */}
           <div>
             <label className="block mb-1 text-sm text-gray-300">บริการ</label>
             <select
@@ -74,6 +81,7 @@ export default function OrderPage() {
             </select>
           </div>
 
+          {/* รายละเอียด */}
           <div>
             <label className="block mb-1 text-sm text-gray-300">รายละเอียด</label>
             <textarea
@@ -84,13 +92,13 @@ export default function OrderPage() {
             />
           </div>
 
-          {/* ปุ่มเหลือแค่ โทร + PDF */}
+          {/* ปุ่ม */}
           <div className="flex gap-3 pt-2 flex-wrap">
             <a
               href="tel:0934783005"
               className="bg-pink-600 hover:bg-pink-700 px-5 py-3 rounded-xl"
             >
-              โทรหาเรา
+              📞 โทรหาเรา
             </a>
 
             <button
@@ -98,11 +106,12 @@ export default function OrderPage() {
               onClick={handleGeneratePDF}
               className="bg-blue-500 hover:bg-blue-600 px-5 py-3 rounded-xl"
             >
-              📄 บันทึกใบงาน
+              📄 บันทึกใบงาน (PDF)
             </button>
           </div>
         </div>
 
+        {/* กลับหน้าแรก */}
         <div className="mt-10">
           <Link href="/" className="text-blue-400 hover:underline">
             ← กลับหน้าแรก
