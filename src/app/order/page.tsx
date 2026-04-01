@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import Link from "next/link";
+import { jsPDF } from "jspdf";
 
 export default function OrderPage() {
   const [name, setName] = useState("");
@@ -9,21 +10,31 @@ export default function OrderPage() {
   const [service, setService] = useState("ลงวินโดว์");
   const [details, setDetails] = useState("");
 
-  // คำนวณข้อความ LINE เฉพาะเมื่อค่าฟอร์มเปลี่ยน
-  const lineText = useMemo(
-    () =>
-      encodeURIComponent(
-        `สวัสดีครับ บังแม็ก\nชื่อ: ${name}\nโทร: ${phone}\nบริการ: ${service}\nรายละเอียด: ${details}`
-      ),
-    [name, phone, service, details]
-  );
+  // ✅ ฟังก์ชันสร้าง PDF
+  const handleGeneratePDF = () => {
+    const doc = new jsPDF();
+
+    doc.setFont("Helvetica", "normal");
+
+    doc.text("ใบงาน / แจ้งซ่อม", 20, 20);
+    doc.text(`ชื่อ: ${name || "-"}`, 20, 40);
+    doc.text(`โทร: ${phone || "-"}`, 20, 50);
+    doc.text(`บริการ: ${service || "-"}`, 20, 60);
+
+    doc.text("รายละเอียด:", 20, 70);
+
+    const splitDetails = doc.splitTextToSize(details || "-", 170);
+    doc.text(splitDetails, 20, 80);
+
+    doc.save(`order-${name || "customer"}.pdf`);
+  };
 
   return (
     <main className="min-h-screen bg-black text-white">
       <section className="max-w-2xl mx-auto px-4 py-12">
         <h1 className="text-3xl font-bold">สั่งงาน / แจ้งซ่อม</h1>
         <p className="mt-2 text-gray-400">
-          กรอกข้อมูลเบื้องต้นแล้วกดปุ่มด้านล่างเพื่อทัก LINE หรือโทรหาเรา
+          กรอกข้อมูลแล้วกดบันทึก หรือโทรหาเราได้เลย
         </p>
 
         <div className="mt-8 space-y-4">
@@ -73,27 +84,23 @@ export default function OrderPage() {
             />
           </div>
 
-          <div className="flex gap-3 pt-2">
-            <a
-              href={`https://line.me/ti/p/~catruncpu?text=${lineText}`}
-              className="bg-green-600 hover:bg-green-700 px-5 py-3 rounded-xl"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              ทัก LINE ส่งรายละเอียด
-            </a>
+          {/* ปุ่มเหลือแค่ โทร + PDF */}
+          <div className="flex gap-3 pt-2 flex-wrap">
             <a
               href="tel:0934783005"
               className="bg-pink-600 hover:bg-pink-700 px-5 py-3 rounded-xl"
-              rel="noopener noreferrer"
             >
               โทรหาเรา
             </a>
-          </div>
 
-          <p className="text-xs text-gray-500">
-            *ถ้าปุ่ม LINE ไม่ขึ้น ให้คัดลอกข้อความเองแล้วส่งหาไลน์ @catruncpu
-          </p>
+            <button
+              type="button"
+              onClick={handleGeneratePDF}
+              className="bg-blue-500 hover:bg-blue-600 px-5 py-3 rounded-xl"
+            >
+              📄 บันทึกใบงาน
+            </button>
+          </div>
         </div>
 
         <div className="mt-10">
