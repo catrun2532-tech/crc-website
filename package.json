@@ -8,11 +8,11 @@
     "start": "next start",
     "lint": "eslint"
   },
-  "dependencies": {
+    "dependencies": {
     "react": "19.1.0",
     "react-dom": "19.1.0",
-    "next": "latest",
-    "jspdf": "^2.5.1" 
+    "next": "15.1.7", 
+    "jspdf": "^2.5.1"
   },
   "devDependencies": {
     "typescript": "^5",
