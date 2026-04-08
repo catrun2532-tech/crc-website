@@ -34,9 +34,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </div>
         </header>
 
-        {/* 🔳 MAIN (เพิ่ม container + spacing) */}
-        <main className="max-w-6xl mx-auto px-4 py-8">
-          {children}
+        {/* 🔥 แก้ตรงนี้: ไม่บีบ layout แล้ว */}
+        <main className="w-full">
+          <div className="max-w-6xl mx-auto px-4 py-8">
+            {children}
+          </div>
         </main>
 
         {/* 🔊 ปุ่มเพลง */}
