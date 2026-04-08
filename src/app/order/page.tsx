@@ -43,9 +43,13 @@ export default function OrderPage() {
   };
 
   const fetchOrders = async () => {
-    const res = await fetch("/api/get-orders");
-    const data = await res.json();
-    setOrders(data);
+    try {
+      const res = await fetch("/api/get-orders");
+      const data = await res.json();
+      setOrders(data);
+    } catch (err) {
+      console.error("โหลดข้อมูลไม่ได้", err);
+    }
   };
 
   useEffect(() => {
@@ -58,24 +62,31 @@ export default function OrderPage() {
       return;
     }
 
-    await fetch("/api/create-order", {
-      method: "POST",
-      body: JSON.stringify(form),
-    });
+    try {
+      await fetch("/api/create-order", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json", // 🔥 สำคัญมาก
+        },
+        body: JSON.stringify(form),
+      });
 
-    alert("✅ บันทึกสำเร็จ");
+      alert("✅ บันทึกสำเร็จ");
 
-    setForm({
-      name: "",
-      phone: "",
-      brand: "",
-      sn: "",
-      detail: "",
-      price: "",
-      status: "รอซ่อม",
-    });
+      setForm({
+        name: "",
+        phone: "",
+        brand: "",
+        sn: "",
+        detail: "",
+        price: "",
+        status: "รอซ่อม",
+      });
 
-    fetchOrders();
+      fetchOrders();
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const generatePDF = (o: any) => {
@@ -85,8 +96,8 @@ export default function OrderPage() {
       <div style="padding:30px;font-family:sans-serif">
         <h2 style="text-align:center">📄 ใบงานซ่อม</h2>
         <hr/>
-        <p><b>${o.runningCode}</b></p>
-        <p>${o.date}</p>
+        <p><b>${o.runningCode || "-"}</b></p>
+        <p>${o.date || "-"}</p>
         <p>${o.name}</p>
         <p>${o.phone}</p>
         <p>${o.brand}</p>
@@ -97,10 +108,9 @@ export default function OrderPage() {
       </div>
     `;
 
-    html2pdf().from(element).save(`${o.runningCode}.pdf`);
+    html2pdf().from(element).save(`${o.runningCode || "order"}.pdf`);
   };
 
-  // 🔐 LOGIN
   if (!isLogin) {
     return (
       <div style={styles.loginPage}>
@@ -123,7 +133,6 @@ export default function OrderPage() {
 
   return (
     <div style={styles.page}>
-      {/* HEADER */}
       <div style={styles.header}>
         <h2><FaTools /> Repair System</h2>
 
@@ -133,7 +142,6 @@ export default function OrderPage() {
         </div>
       </div>
 
-      {/* 🔥 ฟอร์มแนวตั้ง */}
       <div style={styles.formCard}>
         <h3>➕ เพิ่มใบงาน</h3>
 
@@ -156,7 +164,6 @@ export default function OrderPage() {
         </button>
       </div>
 
-      {/* 🔥 รายการ */}
       {role === "admin" && (
         <div style={styles.listCard}>
           <h3>📋 รายการ</h3>
@@ -184,13 +191,7 @@ export default function OrderPage() {
 
 const styles: any = {
   page: { padding: 20, background: "#f1f5f9", minHeight: "100vh" },
-
-  header: {
-    display: "flex",
-    justifyContent: "space-between",
-    marginBottom: 20,
-  },
-
+  header: { display: "flex", justifyContent: "space-between", marginBottom: 20 },
   formCard: {
     maxWidth: 500,
     margin: "auto",
@@ -201,21 +202,18 @@ const styles: any = {
     display: "flex",
     flexDirection: "column",
   },
-
   listCard: {
     marginTop: 30,
     background: "#fff",
     padding: 20,
     borderRadius: 16,
   },
-
   input: {
     marginTop: 10,
     padding: 10,
     borderRadius: 8,
     border: "1px solid #ddd",
   },
-
   saveBtn: {
     marginTop: 15,
     padding: 12,
@@ -224,7 +222,6 @@ const styles: any = {
     color: "#fff",
     border: "none",
   },
-
   item: {
     display: "flex",
     justifyContent: "space-between",
@@ -232,14 +229,12 @@ const styles: any = {
     borderBottom: "1px solid #eee",
     paddingBottom: 10,
   },
-
   loginPage: {
     height: "100vh",
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
   },
-
   loginBox: {
     background: "#fff",
     padding: 30,
