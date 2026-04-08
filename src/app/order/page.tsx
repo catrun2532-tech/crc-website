@@ -116,7 +116,7 @@ export default function OrderPage() {
 
   // ✅ FIX: ใช้ dynamic import (สำคัญมาก)
   const generatePDF = async (o: Order) => {
-    const html2pdf = (await import("html2pdf.js")).default;
+    const html2pdf = require("html2pdf.js");
 
     const element = document.createElement("div");
 
