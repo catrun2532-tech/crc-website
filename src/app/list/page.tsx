@@ -2,8 +2,17 @@
 
 import { useEffect, useState } from "react";
 
+type Order = {
+  name: string;
+  phone: string;
+  sn: string;
+  runningCode: string;
+  brand: string;
+  detail: string;
+};
+
 export default function ListPage() {
-  const [orders, setOrders] = useState([]);
+  const [orders, setOrders] = useState<Order[]>([]);
   const [search, setSearch] = useState("");
 
   useEffect(() => {
