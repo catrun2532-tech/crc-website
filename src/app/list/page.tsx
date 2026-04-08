@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 
-<<<<<<< HEAD
 type Order = {
   name: string;
   phone: string;
@@ -14,16 +13,13 @@ type Order = {
 
 export default function ListPage() {
   const [orders, setOrders] = useState<Order[]>([]);
-=======
-export default function ListPage() {
-  const [orders, setOrders] = useState([]);
->>>>>>> 7bc84aa (fix tailwind config)
   const [search, setSearch] = useState("");
 
   useEffect(() => {
     fetch("/api/get-orders")
       .then((res) => res.json())
-      .then((data) => setOrders(data));
+      .then((data) => setOrders(data))
+      .catch((err) => console.error("โหลดข้อมูลไม่สำเร็จ", err));
   }, []);
 
   const filtered = orders.filter((item) =>
