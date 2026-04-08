@@ -1,107 +1,323 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import Link from "next/link";
+import { useState, useEffect } from "react";
+import html2pdf from "html2pdf.js";
+import { FaTools, FaUser, FaSignOutAlt, FaFilePdf } from "react-icons/fa";
 
 export default function OrderPage() {
-  const [name, setName] = useState("");
-  const [phone, setPhone] = useState("");
-  const [service, setService] = useState("ลงวินโดว์");
-  const [details, setDetails] = useState("");
+  const [isLogin, setIsLogin] = useState(false);
+  const [role, setRole] = useState("");
 
-  // คำนวณข้อความ LINE เฉพาะเมื่อค่าฟอร์มเปลี่ยน
-  const lineText = useMemo(
-    () =>
-      encodeURIComponent(
-        `สวัสดีครับ บังแม็ก\nชื่อ: ${name}\nโทร: ${phone}\nบริการ: ${service}\nรายละเอียด: ${details}`
-      ),
-    [name, phone, service, details]
+  const [user, setUser] = useState("");
+  const [pass, setPass] = useState("");
+
+  const [form, setForm] = useState({
+    name: "",
+    phone: "",
+    brand: "",
+    sn: "",
+    detail: "",
+    price: "",
+    status: "รอซ่อม",
+  });
+
+  const [orders, setOrders] = useState<any[]>([]);
+  const [search, setSearch] = useState("");
+
+  const handleLogin = () => {
+    if (user === "admin" && pass === "crcpu1234") {
+      setRole("admin");
+      setIsLogin(true);
+    } else if (user === "user" && pass === "1234") {
+      setRole("user");
+      setIsLogin(true);
+    } else {
+      alert("❌ user หรือ password ผิด");
+    }
+  };
+
+  const logout = () => {
+    setIsLogin(false);
+    setUser("");
+    setPass("");
+  };
+
+  const fetchOrders = async () => {
+    const res = await fetch("/api/get-orders");
+    const data = await res.json();
+    setOrders(data);
+  };
+
+  useEffect(() => {
+    if (role === "admin") fetchOrders();
+  }, [role]);
+
+  const handleSubmit = async () => {
+    if (!form.name || !form.phone) {
+      alert("กรอกข้อมูลให้ครบ");
+      return;
+    }
+
+    await fetch("/api/create-order", {
+      method: "POST",
+      body: JSON.stringify(form),
+    });
+
+    alert("✅ บันทึกสำเร็จ");
+
+    setForm({
+      name: "",
+      phone: "",
+      brand: "",
+      sn: "",
+      detail: "",
+      price: "",
+      status: "รอซ่อม",
+    });
+
+    fetchOrders();
+  };
+
+  // ✅ เปลี่ยนสถานะ
+  const updateStatus = async (id: string, status: string) => {
+    await fetch("/api/update-order", {
+      method: "POST",
+      body: JSON.stringify({ id, status }),
+    });
+
+    fetchOrders();
+  };
+
+  const getStatusColor = (status: string) => {
+    if (status === "รอซ่อม") return "#facc15"; // เหลือง
+    if (status === "กำลังซ่อม") return "#3b82f6"; // ฟ้า
+    if (status === "เสร็จแล้ว") return "#22c55e"; // เขียว
+    return "#ccc";
+  };
+
+  const generatePDF = (o: any) => {
+    const element = document.createElement("div");
+
+    element.innerHTML = `
+      <div style="padding:30px;font-family:sans-serif">
+        <h2 style="text-align:center">📄 ใบงานซ่อม</h2>
+        <hr/>
+        <p><b>${o.runningCode}</b></p>
+        <p>${o.name}</p>
+        <p>${o.phone}</p>
+        <p>SN: ${o.sn}</p>
+        <p>สถานะ: ${o.status}</p>
+        <p>${o.detail}</p>
+      </div>
+    `;
+
+    html2pdf().from(element).save(`${o.runningCode}.pdf`);
+  };
+
+  // 🔐 LOGIN
+  if (!isLogin) {
+    return (
+      <div style={styles.loginPage}>
+        <div style={styles.loginBox}>
+          <h2><FaTools /> ระบบแจ้งซ่อม</h2>
+
+          <input placeholder="Username" onChange={(e) => setUser(e.target.value)} style={styles.input} />
+          <input type="password" placeholder="Password" onChange={(e) => setPass(e.target.value)} style={styles.input} />
+
+          <button onClick={handleLogin} style={styles.loginBtn}>Login</button>
+        </div>
+      </div>
+    );
+  }
+
+  // 🔎 search
+  const filtered = orders.filter((o) =>
+    o.name?.toLowerCase().includes(search.toLowerCase()) ||
+    o.phone?.includes(search) ||
+    o.sn?.toLowerCase().includes(search.toLowerCase()) ||
+    o.runningCode?.toLowerCase().includes(search.toLowerCase())
   );
 
   return (
-    <main className="min-h-screen bg-black text-white">
-      <section className="max-w-2xl mx-auto px-4 py-12">
-        <h1 className="text-3xl font-bold">สั่งงาน / แจ้งซ่อม</h1>
-        <p className="mt-2 text-gray-400">
-          กรอกข้อมูลเบื้องต้นแล้วกดปุ่มด้านล่างเพื่อทัก LINE หรือโทรหาเรา
-        </p>
+    <div style={styles.page}>
+      {/* HEADER */}
+      <div style={styles.header}>
+        <h2><FaTools /> Repair System</h2>
 
-        <div className="mt-8 space-y-4">
-          <div>
-            <label className="block mb-1 text-sm text-gray-300">ชื่อ</label>
-            <input
-              className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="เช่น สมชาย"
-            />
-          </div>
-
-          <div>
-            <label className="block mb-1 text-sm text-gray-300">เบอร์ติดต่อ</label>
-            <input
-              className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              placeholder="เช่น 093-478-3005"
-              inputMode="tel"
-            />
-          </div>
-
-          <div>
-            <label className="block mb-1 text-sm text-gray-300">บริการ</label>
-            <select
-              className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3"
-              value={service}
-              onChange={(e) => setService(e.target.value)}
-            >
-              <option>ลงวินโดว์</option>
-              <option>กู้ข้อมูล</option>
-              <option>อัปเกรด SSD/RAM</option>
-              <option>ทำความสะอาด/เปลี่ยนซิลิโคน</option>
-              <option>ปัญหาอื่นๆ</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block mb-1 text-sm text-gray-300">รายละเอียด</label>
-            <textarea
-              className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 min-h-[120px]"
-              value={details}
-              onChange={(e) => setDetails(e.target.value)}
-              placeholder="อาการเครื่อง / รุ่น / สิ่งที่ต้องการให้ทำ"
-            />
-          </div>
-
-          <div className="flex gap-3 pt-2">
-            <a
-              href={`https://line.me/ti/p/~catruncpu?text=${lineText}`}
-              className="bg-green-600 hover:bg-green-700 px-5 py-3 rounded-xl"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              ทัก LINE ส่งรายละเอียด
-            </a>
-            <a
-              href="tel:0934783005"
-              className="bg-pink-600 hover:bg-pink-700 px-5 py-3 rounded-xl"
-              rel="noopener noreferrer"
-            >
-              โทรหาเรา
-            </a>
-          </div>
-
-          <p className="text-xs text-gray-500">
-            *ถ้าปุ่ม LINE ไม่ขึ้น ให้คัดลอกข้อความเองแล้วส่งหาไลน์ @catruncpu
-          </p>
+        <div>
+          <FaUser /> {role}
+          <button onClick={logout} style={styles.logoutBtn}>
+            <FaSignOutAlt /> Logout
+          </button>
         </div>
+      </div>
 
-        <div className="mt-10">
-          <Link href="/" className="text-blue-400 hover:underline">
-            ← กลับหน้าแรก
-          </Link>
+      {/* FORM */}
+      <div style={styles.formCard}>
+        <h3>➕ เพิ่มใบงาน</h3>
+
+        <input placeholder="ชื่อ" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} style={styles.input} />
+        <input placeholder="เบอร์" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} style={styles.input} />
+        <input placeholder="ยี่ห้อ" value={form.brand} onChange={(e) => setForm({ ...form, brand: e.target.value })} style={styles.input} />
+        <input placeholder="SN" value={form.sn} onChange={(e) => setForm({ ...form, sn: e.target.value })} style={styles.input} />
+
+        <textarea placeholder="รายละเอียด" value={form.detail} onChange={(e) => setForm({ ...form, detail: e.target.value })} style={styles.input} />
+
+        <button onClick={handleSubmit} style={styles.saveBtn}>
+          💾 บันทึก
+        </button>
+      </div>
+
+      {/* LIST */}
+      {role === "admin" && (
+        <div style={styles.listCard}>
+          <h3>📋 รายการ</h3>
+
+          <input
+            placeholder="🔍 ค้นหา"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            style={styles.input}
+          />
+
+          {filtered.map((o) => (
+            <div key={o._id} style={styles.item}>
+              <div>
+                <b>{o.runningCode}</b>
+                <div>{o.name}</div>
+
+                <div style={{ fontSize: 12 }}>SN: {o.sn}</div>
+
+                {/* 🔥 status color */}
+                <div
+                  style={{
+                    background: getStatusColor(o.status),
+                    color: "#fff",
+                    padding: "2px 8px",
+                    borderRadius: 6,
+                    display: "inline-block",
+                    marginTop: 5,
+                    fontSize: 12,
+                  }}
+                >
+                  {o.status}
+                </div>
+              </div>
+
+              {/* 🔥 edit status */}
+              <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+                <select
+                  value={o.status}
+                  onChange={(e) => updateStatus(o._id, e.target.value)}
+                  style={styles.input}
+                >
+                  <option>รอซ่อม</option>
+                  <option>กำลังซ่อม</option>
+                  <option>เสร็จแล้ว</option>
+                </select>
+
+                <button onClick={() => generatePDF(o)} style={styles.pdfBtn}>
+                  <FaFilePdf />
+                </button>
+              </div>
+            </div>
+          ))}
         </div>
-      </section>
-    </main>
+      )}
+    </div>
   );
 }
+
+const styles: any = {
+  page: {
+    padding: 15,
+    background: "#f1f5f9",
+    minHeight: "100vh",
+  },
+
+  header: {
+    display: "flex",
+    justifyContent: "space-between",
+    marginBottom: 20,
+  },
+
+  formCard: {
+    maxWidth: 500,
+    margin: "auto",
+    background: "#fff",
+    padding: 20,
+    borderRadius: 16,
+  },
+
+  listCard: {
+    marginTop: 20,
+    background: "#fff",
+    padding: 15,
+    borderRadius: 16,
+  },
+
+  input: {
+    marginTop: 10,
+    padding: 10,
+    borderRadius: 8,
+    border: "1px solid #ddd",
+    width: "100%",
+  },
+
+  saveBtn: {
+    marginTop: 15,
+    padding: 12,
+    borderRadius: 10,
+    background: "#22c55e",
+    color: "#fff",
+    border: "none",
+  },
+
+  pdfBtn: {
+    background: "#ef4444",
+    color: "#fff",
+    border: "none",
+    padding: 8,
+    borderRadius: 8,
+  },
+
+  item: {
+    display: "flex",
+    justifyContent: "space-between",
+    marginTop: 10,
+    borderBottom: "1px solid #eee",
+    paddingBottom: 10,
+    flexWrap: "wrap", // ✅ รองรับมือถือ
+  },
+
+  loginPage: {
+    height: "100vh",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  loginBox: {
+    background: "#fff",
+    padding: 30,
+    borderRadius: 16,
+  },
+
+  loginBtn: {
+    marginTop: 10,
+    padding: 10,
+    background: "#3b82f6",
+    color: "#fff",
+    border: "none",
+    borderRadius: 8,
+  },
+
+  logoutBtn: {
+    marginLeft: 10,
+    background: "#ef4444",
+    color: "#fff",
+    border: "none",
+    padding: "5px 10px",
+    borderRadius: 6,
+  },
+};

@@ -1,17 +1,29 @@
 @import "tailwindcss";
 
+/* ===== เพิ่มฟอนต์ไทย (แก้ให้เสถียรขึ้น) ===== */
+@font-face {
+  font-family: 'THSarabunNew';
+  src: url('/fonts/THSarabunNew.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap; /* โหลดเร็ว ไม่กระตุก */
+}
+
+/* ===== ตัวแปรสี ===== */
 :root {
-  --background: #ffffff;
+  --background: #f8fafc;
   --foreground: #171717;
 }
 
+/* ===== theme inline (Next.js) ===== */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: 'THSarabun', Arial, Helvetica, sans-serif;
   --font-mono: var(--font-geist-mono);
 }
 
+/* ===== dark mode ===== */
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
@@ -19,8 +31,17 @@
   }
 }
 
-body {
+/* ===== ใช้ฟอนต์ไทยทั้งเว็บ (ปรับเพิ่มความคม) ===== */
+html, body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'THSarabun', Arial, Helvetica, sans-serif;
+  font-size: 18px; /* เพิ่มให้อ่านง่าย */
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ===== ป้องกัน PDF เพี้ยน ===== */
+* {
+  font-family: 'THSarabun', Arial, Helvetica, sans-serif !important;
 }
