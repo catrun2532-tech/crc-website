@@ -61,11 +61,7 @@ export default function OrderPage() {
       const res = await fetch("/api/get-orders");
       const data = await res.json();
 
-      if (Array.isArray(data)) {
-        setOrders(data);
-      } else {
-        setOrders([]);
-      }
+      setOrders(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error("fetch error:", err);
       setOrders([]);
