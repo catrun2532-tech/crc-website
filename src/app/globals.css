@@ -2,13 +2,21 @@
 @tailwind components;
 @tailwind utilities;
 
+<<<<<<< HEAD
 /* ===== เพิ่มฟอนต์ไทย ===== */
+=======
+/* ===== เพิ่มฟอนต์ไทย (แก้ให้เสถียรขึ้น) ===== */
+>>>>>>> 7bc84aa (fix tailwind config)
 @font-face {
   font-family: 'THSarabunNew';
   src: url('/fonts/THSarabunNew.ttf') format('truetype');
   font-weight: 400;
   font-style: normal;
+<<<<<<< HEAD
   font-display: swap;
+=======
+  font-display: swap; /* โหลดเร็ว ไม่กระตุก */
+>>>>>>> 7bc84aa (fix tailwind config)
 }
 
 /* ===== ตัวแปรสี ===== */
@@ -17,6 +25,17 @@
   --foreground: #171717;
 }
 
+<<<<<<< HEAD
+=======
+/* ===== theme inline (Next.js) ===== */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: 'THSarabun', Arial, Helvetica, sans-serif;
+  --font-mono: var(--font-geist-mono);
+}
+
+>>>>>>> 7bc84aa (fix tailwind config)
 /* ===== dark mode ===== */
 @media (prefers-color-scheme: dark) {
   :root {
@@ -25,17 +44,30 @@
   }
 }
 
+<<<<<<< HEAD
 /* ===== ใช้ฟอนต์ไทยทั้งเว็บ ===== */
 html, body {
   background: var(--background);
   color: var(--foreground);
   font-family: 'THSarabunNew', Arial, Helvetica, sans-serif;
   font-size: 18px;
+=======
+/* ===== ใช้ฟอนต์ไทยทั้งเว็บ (ปรับเพิ่มความคม) ===== */
+html, body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: 'THSarabun', Arial, Helvetica, sans-serif;
+  font-size: 18px; /* เพิ่มให้อ่านง่าย */
+>>>>>>> 7bc84aa (fix tailwind config)
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
 }
 
 /* ===== ป้องกัน PDF เพี้ยน ===== */
 * {
+<<<<<<< HEAD
   font-family: 'THSarabunNew', Arial, Helvetica, sans-serif !important;
+=======
+  font-family: 'THSarabun', Arial, Helvetica, sans-serif !important;
+>>>>>>> 7bc84aa (fix tailwind config)
 }

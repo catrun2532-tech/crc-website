@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 
+<<<<<<< HEAD
 type Order = {
   name: string;
   phone: string;
@@ -13,6 +14,10 @@ type Order = {
 
 export default function ListPage() {
   const [orders, setOrders] = useState<Order[]>([]);
+=======
+export default function ListPage() {
+  const [orders, setOrders] = useState([]);
+>>>>>>> 7bc84aa (fix tailwind config)
   const [search, setSearch] = useState("");
 
   useEffect(() => {
