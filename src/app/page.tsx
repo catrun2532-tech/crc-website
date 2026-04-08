@@ -1,9 +1,9 @@
 export default function HomePage() {
   return (
-    <div className="bg-gray-100 text-gray-800">
+    <div className="w-full">
 
-      {/* 🔥 HERO */}
-      <section className="bg-gradient-to-br from-black via-gray-900 to-gray-800 text-white py-24">
+      {/* 🔥 HERO เต็มจอ */}
+      <section className="w-full bg-gradient-to-br from-black via-gray-900 to-gray-800 text-white py-24">
         <div className="max-w-6xl mx-auto px-6 text-center">
           
           <h1 className="text-4xl md:text-6xl font-bold mb-6 tracking-wide">
@@ -34,16 +34,16 @@ export default function HomePage() {
       </section>
 
       {/* 🎬 VIDEO */}
-      <section className="py-20">
+      <section className="w-full py-20 bg-gray-100">
         <div className="max-w-5xl mx-auto px-6">
           <h2 className="text-3xl font-bold mb-8 text-center">
             วิดีโอแนะนำร้าน
           </h2>
 
-          <div className="bg-white rounded-2xl shadow-xl p-4">
+          <div className="bg-white rounded-2xl shadow-xl p-4 overflow-hidden">
             <video
               controls
-              className="w-full rounded-xl"
+              className="w-full h-auto rounded-xl"
               src="/video/promo.mp4"
             />
           </div>
@@ -51,7 +51,7 @@ export default function HomePage() {
       </section>
 
       {/* 💻 SERVICES */}
-      <section className="py-20 bg-white">
+      <section className="w-full py-20 bg-white">
         <div className="max-w-6xl mx-auto px-6">
           <h2 className="text-3xl font-bold mb-10 text-center">
             บริการของเรา
@@ -88,7 +88,7 @@ export default function HomePage() {
       </section>
 
       {/* 📍 CONTACT */}
-      <section className="py-20">
+      <section className="w-full py-20 bg-gray-100">
         <div className="max-w-4xl mx-auto px-6 text-center">
           <h2 className="text-3xl font-bold mb-8">ติดต่อเรา</h2>
 
