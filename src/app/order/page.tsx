@@ -57,9 +57,19 @@ export default function OrderPage() {
   };
 
   const fetchOrders = async () => {
-    const res = await fetch("/api/get-orders");
-    const data: Order[] = await res.json();
-    setOrders(data);
+    try {
+      const res = await fetch("/api/get-orders");
+      const data = await res.json();
+
+      if (Array.isArray(data)) {
+        setOrders(data);
+      } else {
+        setOrders([]);
+      }
+    } catch (err) {
+      console.error("fetch error:", err);
+      setOrders([]);
+    }
   };
 
   useEffect(() => {
@@ -130,10 +140,10 @@ export default function OrderPage() {
   };
 
   const filtered = orders.filter((o) =>
-    o.name?.toLowerCase().includes(search.toLowerCase()) ||
-    o.phone?.includes(search) ||
-    o.sn?.toLowerCase().includes(search.toLowerCase()) ||
-    o.runningCode?.toLowerCase().includes(search.toLowerCase())
+    (o.name || "").toLowerCase().includes(search.toLowerCase()) ||
+    (o.phone || "").includes(search) ||
+    (o.sn || "").toLowerCase().includes(search.toLowerCase()) ||
+    (o.runningCode || "").toLowerCase().includes(search.toLowerCase())
   );
 
   if (!isLogin) {
