@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 @import "tailwindcss";
 
 /* ===== เพิ่มฟอนต์ไทย (แก้ให้เสถียรขึ้น) ===== */
@@ -39,6 +40,15 @@ html, body {
   font-size: 18px; /* เพิ่มให้อ่านง่าย */
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
+=======
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  background-color: black;
+  color: white;
+>>>>>>> a3d3fdca9c0f51a78c3c881059245c2c0b1fd140
 }
 
 /* ===== ป้องกัน PDF เพี้ยน ===== */

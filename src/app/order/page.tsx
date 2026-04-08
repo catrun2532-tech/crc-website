@@ -78,7 +78,6 @@ export default function OrderPage() {
     fetchOrders();
   };
 
-  // ✅ เปลี่ยนสถานะ
   const updateStatus = async (id: string, status: string) => {
     await fetch("/api/update-order", {
       method: "POST",
@@ -89,9 +88,9 @@ export default function OrderPage() {
   };
 
   const getStatusColor = (status: string) => {
-    if (status === "รอซ่อม") return "#facc15"; // เหลือง
-    if (status === "กำลังซ่อม") return "#3b82f6"; // ฟ้า
-    if (status === "เสร็จแล้ว") return "#22c55e"; // เขียว
+    if (status === "รอซ่อม") return "#facc15";
+    if (status === "กำลังซ่อม") return "#3b82f6";
+    if (status === "เสร็จแล้ว") return "#22c55e";
     return "#ccc";
   };
 
@@ -114,7 +113,6 @@ export default function OrderPage() {
     html2pdf().from(element).save(`${o.runningCode}.pdf`);
   };
 
-  // 🔐 LOGIN
   if (!isLogin) {
     return (
       <div style={styles.loginPage}>
@@ -130,7 +128,6 @@ export default function OrderPage() {
     );
   }
 
-  // 🔎 search
   const filtered = orders.filter((o) =>
     o.name?.toLowerCase().includes(search.toLowerCase()) ||
     o.phone?.includes(search) ||
@@ -140,7 +137,6 @@ export default function OrderPage() {
 
   return (
     <div style={styles.page}>
-      {/* HEADER */}
       <div style={styles.header}>
         <h2><FaTools /> Repair System</h2>
 
@@ -152,7 +148,6 @@ export default function OrderPage() {
         </div>
       </div>
 
-      {/* FORM */}
       <div style={styles.formCard}>
         <h3>➕ เพิ่มใบงาน</h3>
 
@@ -168,7 +163,6 @@ export default function OrderPage() {
         </button>
       </div>
 
-      {/* LIST */}
       {role === "admin" && (
         <div style={styles.listCard}>
           <h3>📋 รายการ</h3>
@@ -185,10 +179,8 @@ export default function OrderPage() {
               <div>
                 <b>{o.runningCode}</b>
                 <div>{o.name}</div>
-
                 <div style={{ fontSize: 12 }}>SN: {o.sn}</div>
 
-                {/* 🔥 status color */}
                 <div
                   style={{
                     background: getStatusColor(o.status),
@@ -204,7 +196,6 @@ export default function OrderPage() {
                 </div>
               </div>
 
-              {/* 🔥 edit status */}
               <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
                 <select
                   value={o.status}
@@ -229,95 +220,16 @@ export default function OrderPage() {
 }
 
 const styles: any = {
-  page: {
-    padding: 15,
-    background: "#f1f5f9",
-    minHeight: "100vh",
-  },
-
-  header: {
-    display: "flex",
-    justifyContent: "space-between",
-    marginBottom: 20,
-  },
-
-  formCard: {
-    maxWidth: 500,
-    margin: "auto",
-    background: "#fff",
-    padding: 20,
-    borderRadius: 16,
-  },
-
-  listCard: {
-    marginTop: 20,
-    background: "#fff",
-    padding: 15,
-    borderRadius: 16,
-  },
-
-  input: {
-    marginTop: 10,
-    padding: 10,
-    borderRadius: 8,
-    border: "1px solid #ddd",
-    width: "100%",
-  },
-
-  saveBtn: {
-    marginTop: 15,
-    padding: 12,
-    borderRadius: 10,
-    background: "#22c55e",
-    color: "#fff",
-    border: "none",
-  },
-
-  pdfBtn: {
-    background: "#ef4444",
-    color: "#fff",
-    border: "none",
-    padding: 8,
-    borderRadius: 8,
-  },
-
-  item: {
-    display: "flex",
-    justifyContent: "space-between",
-    marginTop: 10,
-    borderBottom: "1px solid #eee",
-    paddingBottom: 10,
-    flexWrap: "wrap", // ✅ รองรับมือถือ
-  },
-
-  loginPage: {
-    height: "100vh",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-
-  loginBox: {
-    background: "#fff",
-    padding: 30,
-    borderRadius: 16,
-  },
-
-  loginBtn: {
-    marginTop: 10,
-    padding: 10,
-    background: "#3b82f6",
-    color: "#fff",
-    border: "none",
-    borderRadius: 8,
-  },
-
-  logoutBtn: {
-    marginLeft: 10,
-    background: "#ef4444",
-    color: "#fff",
-    border: "none",
-    padding: "5px 10px",
-    borderRadius: 6,
-  },
+  page: { padding: 15, background: "#f1f5f9", minHeight: "100vh" },
+  header: { display: "flex", justifyContent: "space-between", marginBottom: 20 },
+  formCard: { maxWidth: 500, margin: "auto", background: "#fff", padding: 20, borderRadius: 16 },
+  listCard: { marginTop: 20, background: "#fff", padding: 15, borderRadius: 16 },
+  input: { marginTop: 10, padding: 10, borderRadius: 8, border: "1px solid #ddd", width: "100%" },
+  saveBtn: { marginTop: 15, padding: 12, borderRadius: 10, background: "#22c55e", color: "#fff", border: "none" },
+  pdfBtn: { background: "#ef4444", color: "#fff", border: "none", padding: 8, borderRadius: 8 },
+  item: { display: "flex", justifyContent: "space-between", marginTop: 10, borderBottom: "1px solid #eee", paddingBottom: 10, flexWrap: "wrap" },
+  loginPage: { height: "100vh", display: "flex", justifyContent: "center", alignItems: "center" },
+  loginBox: { background: "#fff", padding: 30, borderRadius: 16 },
+  loginBtn: { marginTop: 10, padding: 10, background: "#3b82f6", color: "#fff", border: "none", borderRadius: 8 },
+  logoutBtn: { marginLeft: 10, background: "#ef4444", color: "#fff", border: "none", padding: "5px 10px", borderRadius: 6 },
 };
