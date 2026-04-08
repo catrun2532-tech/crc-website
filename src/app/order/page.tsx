@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import html2pdf from "html2pdf.js";
 import { FaTools, FaUser, FaSignOutAlt, FaFilePdf } from "react-icons/fa";
 
 type Order = {
@@ -60,7 +59,6 @@ export default function OrderPage() {
     try {
       const res = await fetch("/api/get-orders");
       const data = await res.json();
-
       setOrders(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error("fetch error:", err);
@@ -116,7 +114,10 @@ export default function OrderPage() {
     return "#ccc";
   };
 
-  const generatePDF = (o: Order) => {
+  // ✅ FIX: ใช้ dynamic import (สำคัญมาก)
+  const generatePDF = async (o: Order) => {
+    const html2pdf = (await import("html2pdf.js")).default;
+
     const element = document.createElement("div");
 
     element.innerHTML = `
@@ -170,7 +171,28 @@ export default function OrderPage() {
         </div>
       </div>
 
-      {/* form + list เหมือนเดิม */}
+      <input
+        placeholder="ค้นหา..."
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        style={styles.input}
+      />
+
+      <div style={styles.listCard}>
+        {filtered.map((o) => (
+          <div key={o._id} style={styles.item}>
+            <div>
+              <b>{o.runningCode}</b> - {o.name} ({o.phone})
+              <div>{o.detail}</div>
+              <span style={{ color: getStatusColor(o.status) }}>{o.status}</span>
+            </div>
+
+            <button style={styles.pdfBtn} onClick={() => generatePDF(o)}>
+              <FaFilePdf /> PDF
+            </button>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
@@ -178,12 +200,10 @@ export default function OrderPage() {
 const styles = {
   page: { padding: 15, background: "#f1f5f9", minHeight: "100vh" },
   header: { display: "flex", justifyContent: "space-between", marginBottom: 20 },
-  formCard: { maxWidth: 500, margin: "auto", background: "#fff", padding: 20, borderRadius: 16 },
   listCard: { marginTop: 20, background: "#fff", padding: 15, borderRadius: 16 },
   input: { marginTop: 10, padding: 10, borderRadius: 8, border: "1px solid #ddd", width: "100%" },
-  saveBtn: { marginTop: 15, padding: 12, borderRadius: 10, background: "#22c55e", color: "#fff", border: "none" },
   pdfBtn: { background: "#ef4444", color: "#fff", border: "none", padding: 8, borderRadius: 8 },
-  item: { display: "flex", justifyContent: "space-between", marginTop: 10, borderBottom: "1px solid #eee", paddingBottom: 10, flexWrap: "wrap" },
+  item: { display: "flex", justifyContent: "space-between", marginTop: 10, borderBottom: "1px solid #eee", paddingBottom: 10 },
   loginPage: { height: "100vh", display: "flex", justifyContent: "center", alignItems: "center" },
   loginBox: { background: "#fff", padding: 30, borderRadius: 16 },
   loginBtn: { marginTop: 10, padding: 10, background: "#3b82f6", color: "#fff", border: "none", borderRadius: 8 },
