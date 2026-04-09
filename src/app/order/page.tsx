@@ -51,7 +51,10 @@ export default function OrderPage() {
     setLoading(true);
 
     try {
-      const url = editingId ? `/api/orders/${editingId}` : "/api/orders";
+      const url = editingId
+        ? `/api/orders/${editingId}`
+        : "/api/orders";
+
       const method = editingId ? "PUT" : "POST";
 
       const res = await fetch(url, {
@@ -99,44 +102,50 @@ export default function OrderPage() {
     setEditingId(o._id || null);
   };
 
-  // ✅ PDF ภาษาไทย (แก้แล้ว)
+  // 🔥 PDF (แก้แล้ว + ภาษาไทยไม่เพี้ยน)
   const downloadPDF = async (o: Order) => {
+    const pdf = new jsPDF();
+
     try {
-      const pdf = new jsPDF();
+      const res = await fetch("/fonts/THSarabun.ttf");
 
-      // โหลดฟอนต์ไทย
-      const font = await fetch("/fonts/THSarabun.ttf")
-        .then(res => res.arrayBuffer());
+      if (res.ok) {
+        const font = await res.arrayBuffer();
 
-      pdf.addFileToVFS("THSarabun.ttf", font);
-      pdf.addFont("THSarabun.ttf", "THSarabun", "normal");
-      pdf.setFont("THSarabun");
-
-      pdf.setFontSize(16);
-      pdf.text("ใบแจ้งซ่อม", 20, 20);
-
-      pdf.setFontSize(12);
-      pdf.text(`ชื่อ: ${o.name}`, 20, 30);
-      pdf.text(`เบอร์: ${o.phone}`, 20, 40);
-      pdf.text(`SN: ${o.sn}`, 20, 50);
-      pdf.text(`บริการ: ${o.service}`, 20, 60);
-      pdf.text(`รายละเอียด: ${o.details}`, 20, 70);
-      pdf.text(`สถานะ: ${renderStatus(o.status)}`, 20, 80);
-
-      pdf.save(`order-${o.name}.pdf`);
-    } catch (err) {
-      console.error(err);
-      alert("❌ PDF error");
+        pdf.addFileToVFS("THSarabun.ttf", font);
+        pdf.addFont("THSarabun.ttf", "THSarabun", "normal");
+        pdf.setFont("THSarabun");
+      }
+    } catch (e) {
+      console.log("โหลดฟอนต์ไม่ได้");
     }
+
+    pdf.setFontSize(16);
+    pdf.text("ใบแจ้งซ่อม", 20, 20);
+
+    pdf.setFontSize(12);
+    pdf.text(`ชื่อ: ${o.name}`, 20, 30);
+    pdf.text(`เบอร์: ${o.phone}`, 20, 40);
+    pdf.text(`SN: ${o.sn}`, 20, 50);
+    pdf.text(`บริการ: ${o.service}`, 20, 60);
+    pdf.text(`รายละเอียด: ${o.details}`, 20, 70);
+    pdf.text(`สถานะ: ${renderStatus(o.status)}`, 20, 80);
+
+    pdf.save(`order-${o.name}.pdf`);
   };
 
   const renderStatus = (s: string) => {
     switch (s) {
-      case "pending": return "รอซ่อม";
-      case "repairing": return "กำลังซ่อม";
-      case "waiting_parts": return "รออะไหล่";
-      case "done": return "ซ่อมเสร็จ";
-      default: return "-";
+      case "pending":
+        return "รอซ่อม";
+      case "repairing":
+        return "กำลังซ่อม";
+      case "waiting_parts":
+        return "รออะไหล่";
+      case "done":
+        return "ซ่อมเสร็จ";
+      default:
+        return "-";
     }
   };
 
@@ -151,12 +160,22 @@ export default function OrderPage() {
     return (
       <main className="min-h-screen flex items-center justify-center bg-black text-white">
         <div className="p-6 bg-zinc-900 rounded">
-          <input placeholder="user" onChange={(e) => setUser(e.target.value)} />
-          <input type="password" placeholder="pass" onChange={(e) => setPass(e.target.value)} />
-          <button onClick={() => {
-            if (user === "admin" && pass === "1234") setIsAdmin(true);
-            else alert("ผิด");
-          }}>
+          <input
+            placeholder="user"
+            onChange={(e) => setUser(e.target.value)}
+          />
+          <input
+            type="password"
+            placeholder="pass"
+            onChange={(e) => setPass(e.target.value)}
+          />
+          <button
+            onClick={() => {
+              if (user === "admin" && pass === "1234")
+                setIsAdmin(true);
+              else alert("ผิด");
+            }}
+          >
             login
           </button>
         </div>
@@ -183,8 +202,13 @@ export default function OrderPage() {
             <div>สถานะ: {renderStatus(o.status)}</div>
 
             <div className="flex gap-2 mt-2">
-              <button onClick={() => editOrder(o)}>✏️ แก้ไข</button>
-              <button onClick={() => downloadPDF(o)}>📄 PDF</button>
+              <button onClick={() => editOrder(o)}>
+                ✏️ แก้ไข
+              </button>
+
+              <button onClick={() => downloadPDF(o)}>
+                📄 PDF
+              </button>
             </div>
           </div>
         ))}
