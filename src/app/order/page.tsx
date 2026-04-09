@@ -98,10 +98,14 @@ export default function OrderPage() {
     setEditingId(o._id || null);
   };
 
-  // ✅ PDF ไทยไม่เพี้ยน + สวย
+  // ✅ PDF
   const downloadPDF = async (o: Order) => {
     const { default: jsPDF } = await import("jspdf");
     const html2canvas = (await import("html2canvas")).default;
+
+    const now = new Date();
+    const dateStr = now.toLocaleDateString("th-TH");
+    const timeStr = now.toLocaleTimeString("th-TH");
 
     const div = document.createElement("div");
     div.style.width = "600px";
@@ -112,9 +116,14 @@ export default function OrderPage() {
     div.style.border = "2px solid black";
 
     div.innerHTML = `
-      <div style="text-align:center; margin-bottom:20px;">
+      <div style="text-align:center; margin-bottom:10px;">
         <h2 style="margin:0;">📄 ใบรับงานซ่อม</h2>
-        <small>Computer Service</small>
+        <small>Computer Service ร้านCRCPU</small><br/>
+        <small>📞 096-095-6981</small>
+      </div>
+
+      <div style="text-align:right; font-size:12px;">
+        วันที่: ${dateStr} เวลา: ${timeStr}
       </div>
 
       <hr/>
@@ -179,17 +188,8 @@ export default function OrderPage() {
     return (
       <main className="min-h-screen flex items-center justify-center bg-black text-white">
         <div className="p-6 bg-zinc-900 rounded">
-          <input
-            placeholder="user"
-            className="block mb-2 p-2 bg-black"
-            onChange={(e) => setUser(e.target.value)}
-          />
-          <input
-            type="password"
-            placeholder="pass"
-            className="block mb-2 p-2 bg-black"
-            onChange={(e) => setPass(e.target.value)}
-          />
+          <input placeholder="user" className="block mb-2 p-2 bg-black" onChange={(e) => setUser(e.target.value)} />
+          <input type="password" placeholder="pass" className="block mb-2 p-2 bg-black" onChange={(e) => setPass(e.target.value)} />
           <button
             onClick={() => {
               if (user === "admin" && pass === "1234") setIsAdmin(true);
