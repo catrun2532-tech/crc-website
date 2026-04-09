@@ -25,9 +25,8 @@ export default function OrderPage() {
   const [service, setService] = useState("ลงวินโดว์");
   const [details, setDetails] = useState("");
   const [sn, setSn] = useState("");
-  const [status, setStatus] = useState("pending");
+  const [status, setStatus] = useState("quote"); // ✅ เปลี่ยนตรงนี้
 
-  // ✅ เพิ่มตรงนี้
   const [items, setItems] = useState<string[]>([]);
   const [otherItem, setOtherItem] = useState("");
 
@@ -91,7 +90,7 @@ export default function OrderPage() {
     setPhone("");
     setDetails("");
     setSn("");
-    setStatus("pending");
+    setStatus("quote"); // ✅ เปลี่ยนตรงนี้ด้วย
     setItems([]);
     setOtherItem("");
     setEditingId(null);
@@ -103,7 +102,7 @@ export default function OrderPage() {
     setService(o.service);
     setDetails(o.details);
     setSn(o.sn);
-    setStatus(o.status || "pending");
+    setStatus(o.status || "quote");
     setItems(o.items || []);
     setOtherItem(o.otherItem || "");
     setEditingId(o._id || null);
@@ -178,8 +177,8 @@ export default function OrderPage() {
 
   const renderStatus = (s: string) => {
     switch (s) {
-      case "pending":
-        return "รอซ่อม";
+      case "quote":
+        return "เสนอราคา";
       case "repairing":
         return "กำลังซ่อม";
       case "waiting_parts":
@@ -206,7 +205,7 @@ export default function OrderPage() {
           <input type="password" placeholder="pass" className="block mb-2 p-2 bg-black" onChange={(e) => setPass(e.target.value)} />
           <button
             onClick={() => {
-              if (user === "admin" && pass === "admin040632") setIsAdmin(true);
+              if (user === "admin" && pass === "1234") setIsAdmin(true);
               else alert("ผิด");
             }}
             className="bg-blue-600 px-4 py-2"
@@ -234,15 +233,14 @@ export default function OrderPage() {
         </select>
 
         <select value={status} className="block mb-2 p-2 w-full bg-black" onChange={(e) => setStatus(e.target.value)}>
-          <option value="pending">รอซ่อม</option>
-          <option value="bid">เสนอราคา</option>
+          <option value="quote">เสนอราคา</option>
+          <option value="repairing">กำลังซ่อม</option>
           <option value="waiting_parts">รออะไหล่</option>
           <option value="done">ซ่อมเสร็จ</option>
         </select>
 
         <textarea placeholder="รายละเอียด" value={details} className="block mb-2 p-2 w-full bg-black" onChange={(e) => setDetails(e.target.value)} />
 
-        {/* ✅ checkbox */}
         <div className="mb-2">
           <label className="block mb-1">สิ่งที่นำมาด้วย:</label>
           <div className="flex gap-4 flex-wrap">
@@ -255,8 +253,7 @@ export default function OrderPage() {
                     if (e.target.checked) setItems([...items, item]);
                     else setItems(items.filter((i) => i !== item));
                   }}
-                />{" "}
-                {item}
+                /> {item}
               </label>
             ))}
           </div>
