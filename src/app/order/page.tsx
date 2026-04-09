@@ -27,24 +27,38 @@ export default function OrderPage() {
   const [details, setDetails] = useState("");
   const [sn, setSn] = useState("");
 
-  // 💾 data (จาก DB)
+  // 💾 data
   const [orders, setOrders] = useState<Order[]>([]);
   const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  // 🔄 โหลดข้อมูลจาก MongoDB
+  // 🔄 โหลดข้อมูล
   const loadOrders = async () => {
-    const res = await fetch("/api/orders");
-    const data = await res.json();
-    setOrders(data);
+    try {
+      const res = await fetch("/api/orders");
+      if (!res.ok) throw new Error();
+
+      const data = await res.json();
+      setOrders(data);
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   useEffect(() => {
     loadOrders();
   }, []);
 
-  // 💾 save (ส่งเข้า DB จริง)
+  // 💾 save
   const saveOrder = async () => {
+    if (!name || !phone) {
+      alert("กรอกชื่อ + เบอร์ก่อน");
+      return;
+    }
+
     try {
+      setLoading(true);
+
       const res = await fetch("/api/orders", {
         method: "POST",
         headers: {
@@ -59,22 +73,23 @@ export default function OrderPage() {
         }),
       });
 
-      const data = await res.json();
-      console.log("saved:", data);
+      if (!res.ok) throw new Error();
 
       alert("✅ บันทึกสำเร็จ");
 
-      // reload data
+      // reload
       loadOrders();
 
-      // clear form
+      // clear
       setName("");
       setPhone("");
       setDetails("");
       setSn("");
     } catch (err) {
       console.log(err);
-      alert("❌ บันทึกไม่สำเร็จ");
+      alert("❌ บันทึกไม่สำเร็จ (เช็ค API / MongoDB)");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -84,17 +99,20 @@ export default function OrderPage() {
     else alert("user/pass ผิด");
   };
 
-  // 📄 PDF
+  // 📄 PDF (แก้ scale ให้คม + ไม่ error)
   const exportPDF = async () => {
     const element = document.getElementById("pdf-area");
     if (!element) return;
 
-    const canvas = await html2canvas(element);
+    const canvas = await html2canvas(element, { scale: 2 });
     const imgData = canvas.toDataURL("image/png");
 
-    const pdf = new jsPDF();
-    pdf.addImage(imgData, "PNG", 0, 0, 210, 297);
-    pdf.save("order.pdf");
+    const pdf = new jsPDF("p", "mm", "a4");
+    const width = 210;
+    const height = (canvas.height * width) / canvas.width;
+
+    pdf.addImage(imgData, "PNG", 0, 0, width, height);
+    pdf.save(`order-${Date.now()}.pdf`);
   };
 
   // 🔎 search
@@ -105,7 +123,7 @@ export default function OrderPage() {
       o.sn?.includes(search)
   );
 
-  // 🔒 login page
+  // 🔒 login
   if (!isAdmin) {
     return (
       <main className="min-h-screen flex items-center justify-center bg-black text-white">
@@ -174,8 +192,12 @@ export default function OrderPage() {
         />
 
         <div className="flex gap-2">
-          <button onClick={saveOrder} className="bg-green-600 px-4 py-2">
-            💾 บันทึก
+          <button
+            onClick={saveOrder}
+            disabled={loading}
+            className="bg-green-600 px-4 py-2"
+          >
+            {loading ? "กำลังบันทึก..." : "💾 บันทึก"}
           </button>
 
           <button
