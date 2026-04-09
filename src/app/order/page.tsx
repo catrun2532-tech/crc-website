@@ -32,11 +32,12 @@ export default function OrderPage() {
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // 🔄 โหลดข้อมูล
+  // 🔄 โหลดข้อมูลจาก DB
   const loadOrders = async () => {
     try {
       const res = await fetch("/api/orders");
-      if (!res.ok) throw new Error();
+
+      if (!res.ok) throw new Error("โหลดข้อมูลไม่ได้");
 
       const data = await res.json();
       setOrders(data);
@@ -49,7 +50,7 @@ export default function OrderPage() {
     loadOrders();
   }, []);
 
-  // 💾 save
+  // 💾 save → ยิง API จริง
   const saveOrder = async () => {
     if (!name || !phone) {
       alert("กรอกชื่อ + เบอร์ก่อน");
@@ -73,21 +74,25 @@ export default function OrderPage() {
         }),
       });
 
-      if (!res.ok) throw new Error();
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        throw new Error("save fail");
+      }
 
       alert("✅ บันทึกสำเร็จ");
 
       // reload
-      loadOrders();
+      await loadOrders();
 
-      // clear
+      // clear form
       setName("");
       setPhone("");
       setDetails("");
       setSn("");
     } catch (err) {
       console.log(err);
-      alert("❌ บันทึกไม่สำเร็จ (เช็ค API / MongoDB)");
+      alert("❌ บันทึกไม่สำเร็จ (เช็ค MongoDB / API)");
     } finally {
       setLoading(false);
     }
@@ -95,11 +100,14 @@ export default function OrderPage() {
 
   // 🔐 login
   const handleLogin = () => {
-    if (user === "admin" && pass === "1234") setIsAdmin(true);
-    else alert("user/pass ผิด");
+    if (user === "admin" && pass === "1234") {
+      setIsAdmin(true);
+    } else {
+      alert("user/pass ผิด");
+    }
   };
 
-  // 📄 PDF (แก้ scale ให้คม + ไม่ error)
+  // 📄 PDF
   const exportPDF = async () => {
     const element = document.getElementById("pdf-area");
     if (!element) return;
@@ -108,6 +116,7 @@ export default function OrderPage() {
     const imgData = canvas.toDataURL("image/png");
 
     const pdf = new jsPDF("p", "mm", "a4");
+
     const width = 210;
     const height = (canvas.height * width) / canvas.width;
 
@@ -123,7 +132,7 @@ export default function OrderPage() {
       o.sn?.includes(search)
   );
 
-  // 🔒 login
+  // 🔒 login page
   if (!isAdmin) {
     return (
       <main className="min-h-screen flex items-center justify-center bg-black text-white">
