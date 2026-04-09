@@ -11,6 +11,8 @@ type Order = {
   details: string;
   sn: string;
   status: string;
+  items?: string[];
+  otherItem?: string;
 };
 
 export default function OrderPage() {
@@ -25,8 +27,11 @@ export default function OrderPage() {
   const [sn, setSn] = useState("");
   const [status, setStatus] = useState("pending");
 
-  const [editingId, setEditingId] = useState<string | null>(null);
+  // ✅ เพิ่มตรงนี้
+  const [items, setItems] = useState<string[]>([]);
+  const [otherItem, setOtherItem] = useState("");
 
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [orders, setOrders] = useState<Order[]>([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
@@ -63,6 +68,8 @@ export default function OrderPage() {
           details,
           sn,
           status,
+          items,
+          otherItem,
         }),
       });
 
@@ -85,6 +92,8 @@ export default function OrderPage() {
     setDetails("");
     setSn("");
     setStatus("pending");
+    setItems([]);
+    setOtherItem("");
     setEditingId(null);
   };
 
@@ -95,10 +104,11 @@ export default function OrderPage() {
     setDetails(o.details);
     setSn(o.sn);
     setStatus(o.status || "pending");
+    setItems(o.items || []);
+    setOtherItem(o.otherItem || "");
     setEditingId(o._id || null);
   };
 
-  // ✅ PDF
   const downloadPDF = async (o: Order) => {
     const { default: jsPDF } = await import("jspdf");
     const html2canvas = (await import("html2canvas")).default;
@@ -131,6 +141,10 @@ export default function OrderPage() {
       <p><strong>ชื่อลูกค้า:</strong> ${o.name}</p>
       <p><strong>เบอร์โทร:</strong> ${o.phone}</p>
       <p><strong>SN:</strong> ${o.sn}</p>
+
+      <p><strong>สิ่งที่นำมาด้วย:</strong> 
+        ${[...(o.items || []), o.otherItem || ""].filter(Boolean).join(", ")}
+      </p>
 
       <hr/>
 
@@ -228,6 +242,35 @@ export default function OrderPage() {
 
         <textarea placeholder="รายละเอียด" value={details} className="block mb-2 p-2 w-full bg-black" onChange={(e) => setDetails(e.target.value)} />
 
+        {/* ✅ checkbox */}
+        <div className="mb-2">
+          <label className="block mb-1">สิ่งที่นำมาด้วย:</label>
+          <div className="flex gap-4 flex-wrap">
+            {["กระเป๋า", "สายชาร์จ", "อื่นๆ"].map((item) => (
+              <label key={item}>
+                <input
+                  type="checkbox"
+                  checked={items.includes(item)}
+                  onChange={(e) => {
+                    if (e.target.checked) setItems([...items, item]);
+                    else setItems(items.filter((i) => i !== item));
+                  }}
+                />{" "}
+                {item}
+              </label>
+            ))}
+          </div>
+
+          {items.includes("อื่นๆ") && (
+            <input
+              className="mt-2 p-2 w-full bg-black"
+              placeholder="ระบุอื่นๆ"
+              value={otherItem}
+              onChange={(e) => setOtherItem(e.target.value)}
+            />
+          )}
+        </div>
+
         <button onClick={saveOrder} className="bg-green-600 px-4 py-2">
           {editingId ? "💾 อัปเดต" : "💾 บันทึก"}
         </button>
@@ -240,6 +283,9 @@ export default function OrderPage() {
             <div>เบอร์: {o.phone}</div>
             <div>SN: {o.sn}</div>
             <div>สถานะ: {renderStatus(o.status)}</div>
+            <div>
+              ของที่รับ: {[...(o.items || []), o.otherItem || ""].filter(Boolean).join(", ")}
+            </div>
 
             <div className="flex gap-2 mt-2">
               <button onClick={() => editOrder(o)} className="bg-blue-600 px-2 py-1">✏️ แก้ไข</button>
