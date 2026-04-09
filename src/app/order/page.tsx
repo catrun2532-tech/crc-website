@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import jsPDF from "jspdf";
+import { THSarabunBase64 } from "@/lib/font"; // ✅ เพิ่มตรงนี้
 
 type Order = {
   _id?: string;
@@ -32,7 +33,6 @@ export default function OrderPage() {
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // โหลดข้อมูล
   const loadOrders = async () => {
     const res = await fetch("/api/orders");
     const data = await res.json();
@@ -43,7 +43,6 @@ export default function OrderPage() {
     loadOrders();
   }, []);
 
-  // บันทึก / อัปเดต
   const saveOrder = async () => {
     if (!name || !phone) {
       alert("กรอกชื่อ + เบอร์ก่อน");
@@ -94,7 +93,6 @@ export default function OrderPage() {
     setEditingId(null);
   };
 
-  // แก้ไข
   const editOrder = (o: Order) => {
     setName(o.name);
     setPhone(o.phone);
@@ -105,27 +103,29 @@ export default function OrderPage() {
     setEditingId(o._id || null);
   };
 
-  // ✅ PDF (เวอร์ชันเสถียร ไม่พัง)
+  // ✅ PDF รองรับภาษาไทย
   const downloadPDF = (o: Order) => {
     const pdf = new jsPDF();
 
-    pdf.setFont("Helvetica");
+    // ✅ ใส่ฟ้อนต์ไทย
+    pdf.addFileToVFS("THSarabun.ttf", THSarabunBase64);
+    pdf.addFont("THSarabun.ttf", "THSarabun", "normal");
+    pdf.setFont("THSarabun");
 
     pdf.setFontSize(16);
     pdf.text("ORDER", 20, 20);
 
     pdf.setFontSize(12);
-    pdf.text(`Name: ${o.name}`, 20, 30);
-    pdf.text(`Phone: ${o.phone}`, 20, 40);
+    pdf.text(`ชื่อ: ${o.name}`, 20, 30);
+    pdf.text(`เบอร์: ${o.phone}`, 20, 40);
     pdf.text(`SN: ${o.sn}`, 20, 50);
-    pdf.text(`Service: ${o.service}`, 20, 60);
-    pdf.text(`Details: ${o.details}`, 20, 70);
-    pdf.text(`Status: ${renderStatus(o.status)}`, 20, 80);
+    pdf.text(`บริการ: ${o.service}`, 20, 60);
+    pdf.text(`รายละเอียด: ${o.details}`, 20, 70);
+    pdf.text(`สถานะ: ${renderStatus(o.status)}`, 20, 80);
 
     pdf.save(`order-${o.name}.pdf`);
   };
 
-  // แสดงสถานะ
   const renderStatus = (s: string) => {
     switch (s) {
       case "pending":
@@ -141,7 +141,6 @@ export default function OrderPage() {
     }
   };
 
-  // ค้นหา
   const filtered = orders.filter(
     (o) =>
       o.name?.includes(search) ||
@@ -149,7 +148,6 @@ export default function OrderPage() {
       o.sn?.includes(search)
   );
 
-  // login
   if (!isAdmin) {
     return (
       <main className="min-h-screen flex items-center justify-center bg-black text-white">
@@ -184,7 +182,6 @@ export default function OrderPage() {
     <main className="min-h-screen bg-black text-white p-4">
       <h1 className="text-2xl mb-4">ระบบจัดการร้าน</h1>
 
-      {/* FORM */}
       <div className="bg-zinc-900 p-4 rounded mb-6">
         <input
           placeholder="ชื่อ"
@@ -254,14 +251,12 @@ export default function OrderPage() {
         </div>
       </div>
 
-      {/* SEARCH */}
       <input
         placeholder="ค้นหา"
         className="mb-4 p-2 w-full bg-zinc-900"
         onChange={(e) => setSearch(e.target.value)}
       />
 
-      {/* LIST */}
       <div className="space-y-2">
         {filtered.map((o) => (
           <div key={o._id} className="p-3 bg-zinc-800 rounded">
