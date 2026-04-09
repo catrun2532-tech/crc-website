@@ -14,12 +14,10 @@ type Order = {
 };
 
 export default function OrderPage() {
-  // 🔐 login
   const [isAdmin, setIsAdmin] = useState(false);
   const [user, setUser] = useState("");
   const [pass, setPass] = useState("");
 
-  // 🧾 form
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [service, setService] = useState("ลงวินโดว์");
@@ -29,12 +27,10 @@ export default function OrderPage() {
 
   const [editingId, setEditingId] = useState<string | null>(null);
 
-  // 💾 data
   const [orders, setOrders] = useState<Order[]>([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // 🔄 โหลดข้อมูล
   const loadOrders = async () => {
     const res = await fetch("/api/orders");
     const data = await res.json();
@@ -45,7 +41,6 @@ export default function OrderPage() {
     loadOrders();
   }, []);
 
-  // 💾 save / update
   const saveOrder = async () => {
     if (!name || !phone) {
       alert("กรอกชื่อ + เบอร์ก่อน");
@@ -93,7 +88,6 @@ export default function OrderPage() {
     setEditingId(null);
   };
 
-  // ✏️ edit
   const editOrder = (o: Order) => {
     setName(o.name);
     setPhone(o.phone);
@@ -104,23 +98,61 @@ export default function OrderPage() {
     setEditingId(o._id || null);
   };
 
-  // 📄 PDF (แก้แล้ว)
+  // ✅ PDF ไทยไม่เพี้ยน + สวย
   const downloadPDF = async (o: Order) => {
-    const { default: jsPDF } = await import("jspdf"); // ✅ FIX
+    const { default: jsPDF } = await import("jspdf");
+    const html2canvas = (await import("html2canvas")).default;
 
-    const pdf = new jsPDF();
+    const div = document.createElement("div");
+    div.style.width = "600px";
+    div.style.padding = "20px";
+    div.style.background = "white";
+    div.style.color = "black";
+    div.style.fontFamily = "Tahoma, sans-serif";
+    div.style.border = "2px solid black";
 
-    pdf.text(`Name: ${o.name}`, 10, 10);
-    pdf.text(`Phone: ${o.phone}`, 10, 20);
-    pdf.text(`SN: ${o.sn}`, 10, 30);
-    pdf.text(`Service: ${o.service}`, 10, 40);
-    pdf.text(`Details: ${o.details}`, 10, 50);
-    pdf.text(`Status: ${renderStatus(o.status)}`, 10, 60);
+    div.innerHTML = `
+      <div style="text-align:center; margin-bottom:20px;">
+        <h2 style="margin:0;">📄 ใบรับงานซ่อม</h2>
+        <small>Computer Service</small>
+      </div>
+
+      <hr/>
+
+      <p><strong>ชื่อลูกค้า:</strong> ${o.name}</p>
+      <p><strong>เบอร์โทร:</strong> ${o.phone}</p>
+      <p><strong>SN:</strong> ${o.sn}</p>
+
+      <hr/>
+
+      <p><strong>บริการ:</strong> ${o.service}</p>
+      <p><strong>รายละเอียด:</strong> ${o.details}</p>
+      <p><strong>สถานะ:</strong> ${renderStatus(o.status)}</p>
+
+      <hr/>
+
+      <p style="text-align:right; margin-top:40px;">
+        ลงชื่อ ______________________
+      </p>
+    `;
+
+    document.body.appendChild(div);
+
+    const canvas = await html2canvas(div, { scale: 2 });
+    const imgData = canvas.toDataURL("image/png");
+
+    const pdf = new jsPDF("p", "mm", "a4");
+
+    const imgWidth = 190;
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+    pdf.addImage(imgData, "PNG", 10, 10, imgWidth, imgHeight);
 
     pdf.save(`order-${o.name}.pdf`);
+
+    document.body.removeChild(div);
   };
 
-  // 🎨 แสดงสถานะ
   const renderStatus = (s: string) => {
     switch (s) {
       case "pending":
@@ -136,7 +168,6 @@ export default function OrderPage() {
     }
   };
 
-  // 🔎 search
   const filtered = orders.filter(
     (o) =>
       o.name?.includes(search) ||
@@ -144,7 +175,6 @@ export default function OrderPage() {
       o.sn?.includes(search)
   );
 
-  // 🔐 login
   if (!isAdmin) {
     return (
       <main className="min-h-screen flex items-center justify-center bg-black text-white">
@@ -178,63 +208,31 @@ export default function OrderPage() {
     <main className="min-h-screen bg-black text-white p-4">
       <h1 className="text-2xl mb-4">ระบบจัดการร้าน</h1>
 
-      {/* FORM */}
       <div className="bg-zinc-900 p-4 rounded mb-6">
-        <input
-          placeholder="ชื่อ"
-          value={name}
-          className="block mb-2 p-2 w-full bg-black"
-          onChange={(e) => setName(e.target.value)}
-        />
+        <input placeholder="ชื่อ" value={name} className="block mb-2 p-2 w-full bg-black" onChange={(e) => setName(e.target.value)} />
+        <input placeholder="เบอร์" value={phone} className="block mb-2 p-2 w-full bg-black" onChange={(e) => setPhone(e.target.value)} />
+        <input placeholder="SN" value={sn} className="block mb-2 p-2 w-full bg-black" onChange={(e) => setSn(e.target.value)} />
 
-        <input
-          placeholder="เบอร์"
-          value={phone}
-          className="block mb-2 p-2 w-full bg-black"
-          onChange={(e) => setPhone(e.target.value)}
-        />
-
-        <input
-          placeholder="SN"
-          value={sn}
-          className="block mb-2 p-2 w-full bg-black"
-          onChange={(e) => setSn(e.target.value)}
-        />
-
-        <select
-          value={service}
-          className="block mb-2 p-2 w-full bg-black"
-          onChange={(e) => setService(e.target.value)}
-        >
+        <select value={service} className="block mb-2 p-2 w-full bg-black" onChange={(e) => setService(e.target.value)}>
           <option>ลงวินโดว์</option>
           <option>กู้ข้อมูล</option>
           <option>อัปเกรด</option>
         </select>
 
-        <select
-          value={status}
-          className="block mb-2 p-2 w-full bg-black"
-          onChange={(e) => setStatus(e.target.value)}
-        >
+        <select value={status} className="block mb-2 p-2 w-full bg-black" onChange={(e) => setStatus(e.target.value)}>
           <option value="pending">รอซ่อม</option>
           <option value="repairing">กำลังซ่อม</option>
           <option value="waiting_parts">รออะไหล่</option>
           <option value="done">ซ่อมเสร็จ</option>
         </select>
 
-        <textarea
-          placeholder="รายละเอียด"
-          value={details}
-          className="block mb-2 p-2 w-full bg-black"
-          onChange={(e) => setDetails(e.target.value)}
-        />
+        <textarea placeholder="รายละเอียด" value={details} className="block mb-2 p-2 w-full bg-black" onChange={(e) => setDetails(e.target.value)} />
 
         <button onClick={saveOrder} className="bg-green-600 px-4 py-2">
           {editingId ? "💾 อัปเดต" : "💾 บันทึก"}
         </button>
       </div>
 
-      {/* LIST */}
       <div className="space-y-2">
         {filtered.map((o) => (
           <div key={o._id} className="p-3 bg-zinc-800 rounded">
@@ -244,19 +242,8 @@ export default function OrderPage() {
             <div>สถานะ: {renderStatus(o.status)}</div>
 
             <div className="flex gap-2 mt-2">
-              <button
-                onClick={() => editOrder(o)}
-                className="bg-blue-600 px-2 py-1"
-              >
-                ✏️ แก้ไข
-              </button>
-
-              <button
-                onClick={() => downloadPDF(o)}
-                className="bg-yellow-500 px-2 py-1 text-black"
-              >
-                📄 PDF
-              </button>
+              <button onClick={() => editOrder(o)} className="bg-blue-600 px-2 py-1">✏️ แก้ไข</button>
+              <button onClick={() => downloadPDF(o)} className="bg-yellow-500 px-2 py-1 text-black">📄 PDF</button>
             </div>
           </div>
         ))}
