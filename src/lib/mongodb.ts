@@ -6,31 +6,33 @@ if (!MONGODB_URI) {
   throw new Error("❌ Please define MONGODB_URI in .env or Vercel");
 }
 
-// 👇 type ให้ชัด (กัน TS งอแง)
-interface MongooseCache {
-  conn: typeof mongoose | null;
-  promise: Promise<typeof mongoose> | null;
+// ✅ เพิ่ม global type (กัน TS error)
+declare global {
+  var mongoose: {
+    conn: typeof mongoose | null;
+    promise: Promise<typeof mongoose> | null;
+  };
 }
 
-// 👇 ใช้ globalThis (ถูกต้องกว่า global)
-let cached = (globalThis as any).mongoose as MongooseCache;
+// ✅ ใช้ cache จาก globalThis
+let cached = global.mongoose;
 
 if (!cached) {
-  cached = (globalThis as any).mongoose = {
+  cached = global.mongoose = {
     conn: null,
     promise: null,
   };
 }
 
 async function connectDB() {
-  // ✅ ถ้าเคย connect แล้ว ใช้ของเดิม
+  // ✅ ถ้ามี connection แล้ว
   if (cached.conn) {
     return cached.conn;
   }
 
-  // ✅ ถ้ายังไม่เคย connect → สร้าง promise
+  // ✅ ถ้ายังไม่มี promise → สร้างใหม่
   if (!cached.promise) {
-    cached.promise = mongoose.connect(MONGODB_URI!, {
+    cached.promise = mongoose.connect(MONGODB_URI, {
       bufferCommands: false,
     });
   }
@@ -40,12 +42,11 @@ async function connectDB() {
     console.log("✅ MongoDB connected");
   } catch (error) {
     console.error("❌ MongoDB error:", error);
-    cached.promise = null; // 🔥 กันค้าง
+    cached.promise = null;
     throw error;
   }
 
   return cached.conn;
 }
 
-// ✅ สำคัญ: export default (ให้ตรงกับ route)
 export default connectDB;
