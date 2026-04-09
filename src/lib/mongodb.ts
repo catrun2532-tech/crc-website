@@ -1,6 +1,10 @@
 import mongoose from "mongoose";
 
-const MONGODB_URI = "mongodb://127.0.0.1:27017/repair";
+const MONGODB_URI = process.env.MONGODB_URI as string;
+
+if (!MONGODB_URI) {
+  throw new Error("❌ กรุณาใส่ MONGODB_URI ใน Environment Variables");
+}
 
 export const connectDB = async () => {
   if (mongoose.connection.readyState >= 1) return;
