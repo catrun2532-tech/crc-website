@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { connectDB } from "@/lib/mongodb";
+import connectDB from "@/lib/mongodb"; // ✅ แก้ตรงนี้
 import mongoose from "mongoose";
 
 export const dynamic = "force-dynamic";
@@ -13,7 +13,6 @@ const OrderSchema = new mongoose.Schema(
     details: { type: String },
     sn: { type: String },
 
-    // ✅ เพิ่มสถานะ
     status: {
       type: String,
       enum: ["pending", "repairing", "waiting_parts", "done"],
@@ -23,6 +22,7 @@ const OrderSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// ✅ กัน model ซ้ำ (สำคัญมากใน Next.js)
 const Order =
   mongoose.models.Order || mongoose.model("Order", OrderSchema);
 
@@ -30,6 +30,7 @@ const Order =
 export async function POST(req: Request) {
   try {
     await connectDB();
+
     const body = await req.json();
 
     if (!body.name || !body.phone || !body.service) {
@@ -45,7 +46,7 @@ export async function POST(req: Request) {
       service: body.service,
       details: body.details || "",
       sn: body.sn || "",
-      status: body.status || "pending", // ✅ เพิ่ม
+      status: body.status || "pending",
     });
 
     return NextResponse.json({ success: true, order });
@@ -65,7 +66,7 @@ export async function GET() {
 
     const orders = await Order.find().sort({ createdAt: -1 });
 
-    return NextResponse.json(orders); // ✅ แก้ให้ตรงกับ frontend
+    return NextResponse.json(orders);
   } catch (err: any) {
     console.error("❌ GET ERROR:", err);
     return NextResponse.json([], { status: 500 });
