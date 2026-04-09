@@ -235,7 +235,7 @@ export default function OrderPage() {
 
         <select value={status} className="block mb-2 p-2 w-full bg-black" onChange={(e) => setStatus(e.target.value)}>
           <option value="pending">รอซ่อม</option>
-          <option value="repairing">กำลังซ่อม</option>
+          <option value="bid">เสนอราคา</option>
           <option value="waiting_parts">รออะไหล่</option>
           <option value="done">ซ่อมเสร็จ</option>
         </select>
