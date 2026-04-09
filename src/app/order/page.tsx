@@ -206,7 +206,7 @@ export default function OrderPage() {
           <input type="password" placeholder="pass" className="block mb-2 p-2 bg-black" onChange={(e) => setPass(e.target.value)} />
           <button
             onClick={() => {
-              if (user === "admin" && pass === "1234") setIsAdmin(true);
+              if (user === "admin" && pass === "admin040632") setIsAdmin(true);
               else alert("ผิด");
             }}
             className="bg-blue-600 px-4 py-2"
