@@ -6,7 +6,7 @@ import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 
 type Order = {
-  id: number;
+  _id?: string;
   name: string;
   phone: string;
   service: string;
@@ -27,38 +27,61 @@ export default function OrderPage() {
   const [details, setDetails] = useState("");
   const [sn, setSn] = useState("");
 
-  // 💾 data
+  // 💾 data (จาก DB)
   const [orders, setOrders] = useState<Order[]>([]);
   const [search, setSearch] = useState("");
 
-  // โหลดข้อมูลจาก localStorage
+  // 🔄 โหลดข้อมูลจาก MongoDB
+  const loadOrders = async () => {
+    const res = await fetch("/api/orders");
+    const data = await res.json();
+    setOrders(data);
+  };
+
   useEffect(() => {
-    const saved = localStorage.getItem("orders");
-    if (saved) setOrders(JSON.parse(saved));
+    loadOrders();
   }, []);
 
-  // save
-  const saveOrder = () => {
-    const newOrder: Order = {
-      id: Date.now(),
-      name,
-      phone,
-      service,
-      details,
-      sn,
-    };
+  // 💾 save (ส่งเข้า DB จริง)
+  const saveOrder = async () => {
+    try {
+      const res = await fetch("/api/orders", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name,
+          phone,
+          service,
+          details,
+          sn,
+        }),
+      });
 
-    const updated = [newOrder, ...orders];
-    setOrders(updated);
-    localStorage.setItem("orders", JSON.stringify(updated));
+      const data = await res.json();
+      console.log("saved:", data);
 
-    alert("บันทึกเรียบร้อย");
+      alert("✅ บันทึกสำเร็จ");
+
+      // reload data
+      loadOrders();
+
+      // clear form
+      setName("");
+      setPhone("");
+      setDetails("");
+      setSn("");
+    } catch (err) {
+      console.log(err);
+      alert("❌ บันทึกไม่สำเร็จ");
+    }
   };
 
   // 🔐 login
   const handleLogin = () => {
     if (user === "admin" && pass === "1234") setIsAdmin(true);
-    else alert("ผิด");
+    else alert("user/pass ผิด");
   };
 
   // 📄 PDF
@@ -74,12 +97,12 @@ export default function OrderPage() {
     pdf.save("order.pdf");
   };
 
-  // 🔎 filter
+  // 🔎 search
   const filtered = orders.filter(
     (o) =>
-      o.name.includes(search) ||
-      o.phone.includes(search) ||
-      o.sn.includes(search)
+      o.name?.includes(search) ||
+      o.phone?.includes(search) ||
+      o.sn?.includes(search)
   );
 
   // 🔒 login page
@@ -114,23 +137,27 @@ export default function OrderPage() {
       <div id="pdf-area" className="bg-zinc-900 p-4 rounded mb-6">
         <input
           placeholder="ชื่อ"
+          value={name}
           className="block mb-2 p-2 w-full bg-black"
           onChange={(e) => setName(e.target.value)}
         />
+
         <input
           placeholder="เบอร์"
+          value={phone}
           className="block mb-2 p-2 w-full bg-black"
           onChange={(e) => setPhone(e.target.value)}
         />
 
-        {/* ✅ SN */}
         <input
           placeholder="Serial Number (SN)"
+          value={sn}
           className="block mb-2 p-2 w-full bg-black"
           onChange={(e) => setSn(e.target.value)}
         />
 
         <select
+          value={service}
           className="block mb-2 p-2 w-full bg-black"
           onChange={(e) => setService(e.target.value)}
         >
@@ -141,6 +168,7 @@ export default function OrderPage() {
 
         <textarea
           placeholder="รายละเอียด"
+          value={details}
           className="block mb-2 p-2 w-full bg-black"
           onChange={(e) => setDetails(e.target.value)}
         />
@@ -150,7 +178,10 @@ export default function OrderPage() {
             💾 บันทึก
           </button>
 
-          <button onClick={exportPDF} className="bg-yellow-500 px-4 py-2 text-black">
+          <button
+            onClick={exportPDF}
+            className="bg-yellow-500 px-4 py-2 text-black"
+          >
             📄 PDF
           </button>
         </div>
@@ -166,7 +197,7 @@ export default function OrderPage() {
       {/* 📋 LIST */}
       <div className="space-y-2">
         {filtered.map((o) => (
-          <div key={o.id} className="p-3 bg-zinc-800 rounded">
+          <div key={o._id} className="p-3 bg-zinc-800 rounded">
             <div>ชื่อ: {o.name}</div>
             <div>เบอร์: {o.phone}</div>
             <div>SN: {o.sn}</div>
