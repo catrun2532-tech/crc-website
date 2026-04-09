@@ -12,6 +12,7 @@ type Order = {
   service: string;
   details: string;
   sn: string;
+  status: string; // ✅ เพิ่ม
 };
 
 export default function OrderPage() {
@@ -26,102 +27,115 @@ export default function OrderPage() {
   const [service, setService] = useState("ลงวินโดว์");
   const [details, setDetails] = useState("");
   const [sn, setSn] = useState("");
+  const [status, setStatus] = useState("pending");
+
+  const [editingId, setEditingId] = useState<string | null>(null); // ✅ edit mode
 
   // 💾 data
   const [orders, setOrders] = useState<Order[]>([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // 🔄 โหลดข้อมูลจาก DB
+  // 🔄 โหลดข้อมูล
   const loadOrders = async () => {
-    try {
-      const res = await fetch("/api/orders");
-
-      if (!res.ok) throw new Error("โหลดข้อมูลไม่ได้");
-
-      const data = await res.json();
-      setOrders(data);
-    } catch (err) {
-      console.log(err);
-    }
+    const res = await fetch("/api/orders");
+    const data = await res.json();
+    setOrders(data);
   };
 
   useEffect(() => {
     loadOrders();
   }, []);
 
-  // 💾 save → ยิง API จริง
+  // 💾 save / update
   const saveOrder = async () => {
     if (!name || !phone) {
       alert("กรอกชื่อ + เบอร์ก่อน");
       return;
     }
 
-    try {
-      setLoading(true);
+    setLoading(true);
 
-      const res = await fetch("/api/orders", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+    try {
+      const url = editingId ? `/api/orders/${editingId}` : "/api/orders";
+      const method = editingId ? "PUT" : "POST";
+
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name,
           phone,
           service,
           details,
           sn,
+          status,
         }),
       });
 
       const data = await res.json();
 
-      if (!res.ok || !data.success) {
-        throw new Error("save fail");
-      }
+      if (!res.ok) throw new Error();
 
-      alert("✅ บันทึกสำเร็จ");
+      alert(editingId ? "✅ อัปเดตแล้ว" : "✅ บันทึกสำเร็จ");
 
-      // reload
-      await loadOrders();
-
-      // clear form
-      setName("");
-      setPhone("");
-      setDetails("");
-      setSn("");
-    } catch (err) {
-      console.log(err);
-      alert("❌ บันทึกไม่สำเร็จ (เช็ค MongoDB / API)");
+      resetForm();
+      loadOrders();
+    } catch {
+      alert("❌ error");
     } finally {
       setLoading(false);
     }
   };
 
-  // 🔐 login
-  const handleLogin = () => {
-    if (user === "admin" && pass === "1234") {
-      setIsAdmin(true);
-    } else {
-      alert("user/pass ผิด");
-    }
+  const resetForm = () => {
+    setName("");
+    setPhone("");
+    setDetails("");
+    setSn("");
+    setStatus("pending");
+    setEditingId(null);
   };
 
-  // 📄 PDF
-  const exportPDF = async () => {
-    const element = document.getElementById("pdf-area");
-    if (!element) return;
+  // ✏️ edit
+  const editOrder = (o: Order) => {
+    setName(o.name);
+    setPhone(o.phone);
+    setService(o.service);
+    setDetails(o.details);
+    setSn(o.sn);
+    setStatus(o.status || "pending");
+    setEditingId(o._id || null);
+  };
 
-    const canvas = await html2canvas(element, { scale: 2 });
-    const imgData = canvas.toDataURL("image/png");
+  // 📄 PDF รายการ
+  const downloadPDF = (o: Order) => {
+    const pdf = new jsPDF();
 
-    const pdf = new jsPDF("p", "mm", "a4");
+    pdf.text(`ชื่อ: ${o.name}`, 10, 10);
+    pdf.text(`เบอร์: ${o.phone}`, 10, 20);
+    pdf.text(`SN: ${o.sn}`, 10, 30);
+    pdf.text(`บริการ: ${o.service}`, 10, 40);
+    pdf.text(`รายละเอียด: ${o.details}`, 10, 50);
+    pdf.text(`สถานะ: ${renderStatus(o.status)}`, 10, 60);
 
-    const width = 210;
-    const height = (canvas.height * width) / canvas.width;
+    pdf.save(`order-${o.name}.pdf`);
+  };
 
-    pdf.addImage(imgData, "PNG", 0, 0, width, height);
-    pdf.save(`order-${Date.now()}.pdf`);
+  // 🎨 แสดงสถานะ
+  const renderStatus = (s: string) => {
+    switch (s) {
+      case "pending":
+        return "รอซ่อม";
+      case "repairing":
+        return "กำลังซ่อม";
+      case "waiting_parts":
+        return "รออะไหล่";
+      case "done":
+        return "ซ่อมเสร็จ";
+      default:
+        return "-";
+    }
   };
 
   // 🔎 search
@@ -132,7 +146,7 @@ export default function OrderPage() {
       o.sn?.includes(search)
   );
 
-  // 🔒 login page
+  // 🔐 login
   if (!isAdmin) {
     return (
       <main className="min-h-screen flex items-center justify-center bg-black text-white">
@@ -148,7 +162,13 @@ export default function OrderPage() {
             className="block mb-2 p-2 bg-black"
             onChange={(e) => setPass(e.target.value)}
           />
-          <button onClick={handleLogin} className="bg-blue-600 px-4 py-2">
+          <button
+            onClick={() => {
+              if (user === "admin" && pass === "1234") setIsAdmin(true);
+              else alert("ผิด");
+            }}
+            className="bg-blue-600 px-4 py-2"
+          >
             login
           </button>
         </div>
@@ -160,8 +180,8 @@ export default function OrderPage() {
     <main className="min-h-screen bg-black text-white p-4">
       <h1 className="text-2xl mb-4">ระบบจัดการร้าน</h1>
 
-      {/* 🧾 FORM */}
-      <div id="pdf-area" className="bg-zinc-900 p-4 rounded mb-6">
+      {/* FORM */}
+      <div className="bg-zinc-900 p-4 rounded mb-6">
         <input
           placeholder="ชื่อ"
           value={name}
@@ -177,7 +197,7 @@ export default function OrderPage() {
         />
 
         <input
-          placeholder="Serial Number (SN)"
+          placeholder="SN"
           value={sn}
           className="block mb-2 p-2 w-full bg-black"
           onChange={(e) => setSn(e.target.value)}
@@ -193,6 +213,17 @@ export default function OrderPage() {
           <option>อัปเกรด</option>
         </select>
 
+        <select
+          value={status}
+          className="block mb-2 p-2 w-full bg-black"
+          onChange={(e) => setStatus(e.target.value)}
+        >
+          <option value="pending">รอซ่อม</option>
+          <option value="repairing">กำลังซ่อม</option>
+          <option value="waiting_parts">รออะไหล่</option>
+          <option value="done">ซ่อมเสร็จ</option>
+        </select>
+
         <textarea
           placeholder="รายละเอียด"
           value={details}
@@ -203,36 +234,53 @@ export default function OrderPage() {
         <div className="flex gap-2">
           <button
             onClick={saveOrder}
-            disabled={loading}
             className="bg-green-600 px-4 py-2"
           >
-            {loading ? "กำลังบันทึก..." : "💾 บันทึก"}
+            {editingId ? "💾 อัปเดต" : "💾 บันทึก"}
           </button>
 
-          <button
-            onClick={exportPDF}
-            className="bg-yellow-500 px-4 py-2 text-black"
-          >
-            📄 PDF
-          </button>
+          {editingId && (
+            <button
+              onClick={resetForm}
+              className="bg-gray-500 px-4 py-2"
+            >
+              ยกเลิก
+            </button>
+          )}
         </div>
       </div>
 
-      {/* 🔎 SEARCH */}
+      {/* SEARCH */}
       <input
-        placeholder="ค้นหา ชื่อ / เบอร์ / SN"
+        placeholder="ค้นหา"
         className="mb-4 p-2 w-full bg-zinc-900"
         onChange={(e) => setSearch(e.target.value)}
       />
 
-      {/* 📋 LIST */}
+      {/* LIST */}
       <div className="space-y-2">
         {filtered.map((o) => (
           <div key={o._id} className="p-3 bg-zinc-800 rounded">
             <div>ชื่อ: {o.name}</div>
             <div>เบอร์: {o.phone}</div>
             <div>SN: {o.sn}</div>
-            <div>บริการ: {o.service}</div>
+            <div>สถานะ: {renderStatus(o.status)}</div>
+
+            <div className="flex gap-2 mt-2">
+              <button
+                onClick={() => editOrder(o)}
+                className="bg-blue-600 px-2 py-1"
+              >
+                ✏️ แก้ไข
+              </button>
+
+              <button
+                onClick={() => downloadPDF(o)}
+                className="bg-yellow-500 px-2 py-1 text-black"
+              >
+                📄 PDF
+              </button>
+            </div>
           </div>
         ))}
       </div>
