@@ -99,12 +99,12 @@ export default function OrderPage() {
     setEditingId(o._id || null);
   };
 
-  // 🔥 PDF (แก้แล้ว)
+  // ✅ PDF ภาษาไทย (แก้แล้ว)
   const downloadPDF = async (o: Order) => {
     try {
       const pdf = new jsPDF();
 
-      // โหลด font ไทย
+      // โหลดฟอนต์ไทย
       const font = await fetch("/fonts/THSarabun.ttf")
         .then(res => res.arrayBuffer());
 
@@ -168,17 +168,31 @@ export default function OrderPage() {
     <main className="min-h-screen bg-black text-white p-4">
       <h1 className="text-2xl mb-4">ระบบจัดการร้าน</h1>
 
-      <input placeholder="ค้นหา" onChange={(e) => setSearch(e.target.value)} />
+      <input
+        placeholder="ค้นหา"
+        className="mb-4 p-2 w-full bg-zinc-900"
+        onChange={(e) => setSearch(e.target.value)}
+      />
 
-      {filtered.map((o) => (
-        <div key={o._id}>
-          <div>ชื่อ: {o.name}</div>
-          <div>สถานะ: {renderStatus(o.status)}</div>
+      <div className="space-y-2">
+        {filtered.map((o) => (
+          <div key={o._id} className="p-3 bg-zinc-800 rounded">
+            <div>ชื่อ: {o.name}</div>
+            <div>เบอร์: {o.phone}</div>
+            <div>SN: {o.sn}</div>
+            <div>สถานะ: {renderStatus(o.status)}</div>
 
-          <button onClick={() => editOrder(o)}>แก้ไข</button>
-          <button onClick={() => downloadPDF(o)}>PDF</button>
-        </div>
-      ))}
+            <div className="flex gap-2 mt-2">
+              <button onClick={() => editOrder(o)}>✏️ แก้ไข</button>
+              <button onClick={() => downloadPDF(o)}>📄 PDF</button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <Link href="/" className="block mt-6 text-blue-400">
+        ← กลับหน้าแรก
+      </Link>
     </main>
   );
 }
