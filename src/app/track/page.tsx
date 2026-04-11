@@ -14,12 +14,12 @@ type Order = {
 };
 
 export default function TrackPage() {
-  const [keyword, setKeyword] = useState("");
+  const [sn, setSn] = useState(""); // ✅ เปลี่ยนจาก keyword → sn
   const [result, setResult] = useState<Order | null>(null);
   const [loading, setLoading] = useState(false);
 
   const searchOrder = async () => {
-    if (!keyword) return alert("กรอก SN หรือ เบอร์");
+    if (!sn) return alert("กรอก SN");
 
     setLoading(true);
 
@@ -29,7 +29,7 @@ export default function TrackPage() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ keyword }),
+        body: JSON.stringify({ sn }), // ✅ ส่ง sn อย่างเดียว
       });
 
       const data = await res.json();
@@ -40,7 +40,7 @@ export default function TrackPage() {
       } else {
         setResult(data);
       }
-    } catch (err) {
+    } catch {
       alert("❌ error");
     } finally {
       setLoading(false);
@@ -68,9 +68,9 @@ export default function TrackPage() {
         <h1 className="text-xl mb-4">🔍 เช็คสถานะงานซ่อม</h1>
 
         <input
-          placeholder="กรอก SN หรือ เบอร์โทร"
-          value={keyword}
-          onChange={(e) => setKeyword(e.target.value)}
+          placeholder="กรอก SN"
+          value={sn}
+          onChange={(e) => setSn(e.target.value)}
           className="w-full p-2 mb-3 bg-black"
         />
 
