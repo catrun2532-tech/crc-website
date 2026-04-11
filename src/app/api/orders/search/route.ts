@@ -1,30 +1,35 @@
 import { NextResponse } from "next/server";
-import clientPromise from "@/lib/mongodb"; // ใช้ตัวเดิมของคุณ
+import connectDB from "@/lib/mongodb";
+import Order from "@/models/Order";
 
 export async function POST(req: Request) {
   try {
-    const { keyword } = await req.json();
+    await connectDB();
 
-    if (!keyword) {
-      return NextResponse.json({ error: "no keyword" }, { status: 400 });
+    const { sn } = await req.json();
+
+    if (!sn) {
+      return NextResponse.json({ error: "no sn" }, { status: 400 });
     }
 
-    const client = await clientPromise;
-    const db = client.db("repairdb"); // ⚠️ เปลี่ยนชื่อ db ให้ตรงของคุณ
-
-    const order = await db.collection("orders").findOne({
-      $or: [
-        { sn: keyword },
-        { phone: keyword },
-      ],
-    });
+    const order = await Order.findOne({ sn }).lean();
 
     if (!order) {
       return NextResponse.json(null);
     }
 
-    return NextResponse.json(order);
-  } catch (err) {
+    return NextResponse.json({
+      name: order.name,
+      phone: order.phone,
+      service: order.service,
+      details: order.details,
+      sn: order.sn,
+      status: order.status,
+      items: order.items || [],
+      otherItem: order.otherItem || "",
+    });
+
+  } catch {
     return NextResponse.json({ error: "server error" }, { status: 500 });
   }
 }
