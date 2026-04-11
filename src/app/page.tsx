@@ -90,14 +90,12 @@ export default function Page() {
               โทร: 0960956981
             </a>
             {/* เว็บไซต์ภายนอกใช้ a ได้ */}
-            <a
-              href={BRAND.website}
-              className="px-5 py-3 rounded-2xl bg-zinc-800 hover:bg-zinc-700 transition"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              {BRAND.website.replace("https://", "")}
-            </a>
+           <Link
+  href="/track"
+  className="px-5 py-3 rounded-2xl bg-gradient-to-r from-yellow-400 to-red-500 text-black font-semibold"
+>
+  🔍 เช็คใบงาน (ลูกค้า)
+</Link>
           </div>
         </div>
       </section>
