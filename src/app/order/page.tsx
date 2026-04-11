@@ -272,7 +272,13 @@ export default function OrderPage() {
           {editingId ? "💾 อัปเดต" : "💾 บันทึก"}
         </button>
       </div>
-
+{/* ช่องค้นหา */}
+<input
+  placeholder="🔍 ค้นหาชื่อ / เบอร์ / SN"
+  value={search}
+  onChange={(e) => setSearch(e.target.value)}
+  className="mb-4 p-2 w-full bg-black border border-zinc-700 rounded"
+/>
       <div className="space-y-2">
         {filtered.map((o) => (
           <div key={o._id} className="p-3 bg-zinc-800 rounded">
