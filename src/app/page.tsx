@@ -19,10 +19,9 @@ export default function TrackPage() {
   const [loading, setLoading] = useState(false);
 
   const searchOrder = async () => {
-    if (!sn.trim()) return alert("กรอก SN");
+    if (!sn) return alert("กรอก SN");
 
     setLoading(true);
-    setResult(null);
 
     try {
       const res = await fetch("/api/orders/search", {
@@ -30,13 +29,14 @@ export default function TrackPage() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ sn: sn.trim() }),
+        body: JSON.stringify({ sn }),
       });
 
       const data = await res.json();
 
       if (!data) {
         alert("ไม่พบใบงาน");
+        setResult(null);
       } else {
         setResult(data);
       }
@@ -50,23 +50,23 @@ export default function TrackPage() {
   const renderStatus = (s: string) => {
     switch (s) {
       case "quote":
-        return "🟡 เสนอราคา";
+        return "เสนอราคา";
       case "repairing":
-        return "🔧 กำลังซ่อม";
+        return "กำลังซ่อม";
       case "waiting_parts":
-        return "📦 รออะไหล่";
+        return "รออะไหล่";
       case "done":
-        return "✅ ซ่อมเสร็จ";
+        return "ซ่อมเสร็จ";
       default:
         return "-";
     }
   };
 
   return (
-    <main className="min-h-screen bg-black text-white flex items-center justify-center p-4">
-      <div className="bg-zinc-900 p-6 rounded-xl w-full max-w-md shadow-lg">
+    <main className="min-h-screen bg-black text-white flex items-center justify-center">
+      <div className="bg-zinc-900 p-6 rounded w-full max-w-md">
 
-        <h1 className="text-xl mb-4 text-center font-bold">
+        <h1 className="text-xl mb-4 text-center">
           🔍 เช็คสถานะงานซ่อม
         </h1>
 
@@ -75,37 +75,33 @@ export default function TrackPage() {
           placeholder="กรอก SN เช่น CRC001"
           value={sn}
           onChange={(e) => setSn(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") searchOrder();
-          }}
-          className="w-full p-3 mb-3 bg-black border border-gray-700 rounded focus:outline-none focus:border-blue-500"
+          className="w-full p-2 mb-3 bg-black border border-gray-700"
         />
 
         {/* ปุ่ม */}
         <button
           onClick={searchOrder}
-          disabled={loading}
-          className="bg-blue-600 hover:bg-blue-700 w-full py-2 rounded font-semibold disabled:opacity-50"
+          className="bg-blue-600 w-full py-2 rounded"
         >
-          {loading ? "⏳ กำลังค้นหา..." : "🔍 ค้นหา"}
+          {loading ? "กำลังค้นหา..." : "ค้นหา"}
         </button>
 
         {/* แสดงผล */}
         {result && (
-          <div className="mt-5 bg-zinc-800 p-4 rounded-lg space-y-2 text-sm">
+          <div className="mt-4 bg-zinc-800 p-4 rounded space-y-2">
 
-            <div><b>👤 ชื่อ:</b> {result.name}</div>
-            <div><b>📞 เบอร์:</b> {result.phone}</div>
-            <div><b>💻 SN:</b> {result.sn}</div>
-            <div><b>📌 สถานะ:</b> {renderStatus(result.status)}</div>
-            <div><b>🛠️ บริการ:</b> {result.service}</div>
-            <div><b>📝 รายละเอียด:</b> {result.details}</div>
+            <div><b>ชื่อ:</b> {result.name}</div>
+            <div><b>เบอร์:</b> {result.phone}</div>
+            <div><b>SN:</b> {result.sn}</div>
+            <div><b>สถานะ:</b> {renderStatus(result.status)}</div>
+            <div><b>บริการ:</b> {result.service}</div>
+            <div><b>รายละเอียด:</b> {result.details}</div>
 
             <div>
-              <b>📦 สิ่งที่รับ:</b>{" "}
+              <b>สิ่งที่รับ:</b>{" "}
               {[...(result.items || []), result.otherItem || ""]
                 .filter(Boolean)
-                .join(", ") || "-"}
+                .join(", ")}
             </div>
 
           </div>
