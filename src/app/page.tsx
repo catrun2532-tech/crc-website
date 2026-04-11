@@ -1,86 +1,116 @@
-import Link from "next/link";
-import Image from "next/image";
+"use client";
 
-const BRAND = {
-  title: "C.R.C. คอมพิวเตอร์ ",
-  tagline:
-    "รับซ่อมโน๊ตบุ๊ค/คอมพิวเตอร์ ทุกรุ่นทุกอาการ ลงวินโดว์ กู้ข้อมูล อัปเกรด SSD/RAM",
-  facebook: "https://www.facebook.com/catruncpu",
-  line: "https://line.me/ti/p/~catruncpu",
-  phone: "0960956981",
-  website: "https://www.catruncpu.com",
-  addressShort: "ค้นหา: catruncpu บนแผนที่",
+import { useState } from "react";
+
+type Order = {
+  name: string;
+  phone: string;
+  service: string;
+  details: string;
+  sn: string;
+  status: string;
+  items?: string[];
+  otherItem?: string;
 };
 
-const VIDEO = {
-  src: "/video/promo.mp4",
-};
+export default function TrackPage() {
+  const [sn, setSn] = useState("");
+  const [result, setResult] = useState<Order | null>(null);
+  const [loading, setLoading] = useState(false);
 
-const GALLERY: string[] = ["pic1.jpg", "pic2.jpg", "pic3.jpg", "pic4.jpg"];
+  const searchOrder = async () => {
+    if (!sn.trim()) return alert("กรอก SN");
 
-const SERVICES = [
-  { name: "ลงวินโดว์ + โปรแกรมพื้นฐาน", price: "400–800 บาท" },
-  { name: "อัปเกรด SSD (ย้ายข้อมูล)", price: "สอบถามราคา" },
-  { name: "ทำความสะอาด + เปลี่ยนซิลิโคน", price: "300–700 บาท" },
-  { name: "กู้ข้อมูล/ไฟล์หาย", price: "ประเมินก่อนซ่อม" },
-];
+    setLoading(true);
+    setResult(null);
 
-export default function Page() {
+    try {
+      const res = await fetch("/api/orders/search", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ sn: sn.trim() }),
+      });
+
+      const data = await res.json();
+
+      if (!data) {
+        alert("❌ ไม่พบใบงาน");
+      } else {
+        setResult(data);
+      }
+    } catch {
+      alert("❌ เกิดข้อผิดพลาด");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const renderStatus = (s: string) => {
+    switch (s) {
+      case "quote":
+        return "🟡 เสนอราคา";
+      case "repairing":
+        return "🔧 กำลังซ่อม";
+      case "waiting_parts":
+        return "📦 รออะไหล่";
+      case "done":
+        return "✅ ซ่อมเสร็จ";
+      default:
+        return "-";
+    }
+  };
+
   return (
-    <main className="min-h-screen bg-black text-white">
+    <main className="min-h-screen bg-black text-white flex items-center justify-center p-4">
+      <div className="bg-zinc-900 p-6 rounded-xl w-full max-w-md shadow-lg">
 
-      {/* HERO */}
-      <section id="about" className="relative overflow-hidden">
-        <div className="max-w-6xl mx-auto px-4 py-20 relative">
+        <h1 className="text-xl mb-4 text-center font-bold">
+          🔍 เช็คสถานะงานซ่อม
+        </h1>
 
-          <h1 className="text-4xl md:text-6xl font-extrabold">
-            {BRAND.title}
-          </h1>
+        {/* input */}
+        <input
+          placeholder="กรอก SN เช่น CRC001"
+          value={sn}
+          onChange={(e) => setSn(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") searchOrder(); // ✅ กด Enter ได้
+          }}
+          className="w-full p-3 mb-3 bg-black border border-gray-700 rounded focus:outline-none focus:border-blue-500"
+        />
 
-          <p className="mt-5 text-lg text-gray-300 max-w-3xl">
-            {BRAND.tagline}
-          </p>
+        {/* ปุ่ม */}
+        <button
+          onClick={searchOrder}
+          disabled={loading}
+          className="bg-blue-600 hover:bg-blue-700 w-full py-2 rounded font-semibold disabled:opacity-50"
+        >
+          {loading ? "⏳ กำลังค้นหา..." : "🔍 ค้นหา"}
+        </button>
 
-          {/* ✅ ปุ่มเหมือนเดิม + เพิ่มใบงาน */}
-          <div className="mt-8 flex flex-wrap gap-3">
+        {/* แสดงผล */}
+        {result && (
+          <div className="mt-5 bg-zinc-800 p-4 rounded-lg space-y-2 text-sm">
 
-            <a href={BRAND.facebook} className="px-5 py-3 rounded-2xl bg-blue-600">
-              Facebook: catruncpu
-            </a>
+            <div><b>👤 ชื่อ:</b> {result.name}</div>
+            <div><b>📞 เบอร์:</b> {result.phone}</div>
+            <div><b>💻 SN:</b> {result.sn}</div>
+            <div><b>📌 สถานะ:</b> {renderStatus(result.status)}</div>
+            <div><b>🛠️ บริการ:</b> {result.service}</div>
+            <div><b>📝 รายละเอียด:</b> {result.details}</div>
 
-            <a href={BRAND.line} className="px-5 py-3 rounded-2xl bg-green-600">
-              LINE: catruncpu
-            </a>
-
-            <a href={`tel:${BRAND.phone}`} className="px-5 py-3 rounded-2xl bg-pink-600">
-              โทร: 0960956981
-            </a>
-
-            {/* 🔥 ปุ่มใหม่ */}
-            <Link
-              href="/track"
-              className="px-5 py-3 rounded-2xl bg-orange-500 font-bold"
-            >
-              🔍 ใบงาน (ลูกค้า)
-            </Link>
+            <div>
+              <b>📦 สิ่งที่รับ:</b>{" "}
+              {[...(result.items || []), result.otherItem || ""]
+                .filter(Boolean)
+                .join(", ") || "-"}
+            </div>
 
           </div>
-
-          {/* 🔽 ย้าย www ลงล่าง */}
-          <div className="mt-4 text-sm text-gray-400">
-            <a
-              href={BRAND.website}
-              target="_blank"
-              className="hover:text-white underline"
-            >
-              {BRAND.website.replace("https://", "")}
-            </a>
-          </div>
-
-        </div>
-      </section>
-
-      {/* ส่วนอื่นเหมือนเดิมทั้งหมด */}
+        )}
+      </div>
     </main>
   );
 }
