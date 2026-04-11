@@ -36,7 +36,7 @@ export default function TrackPage() {
       const data = await res.json();
 
       if (!data) {
-        alert("❌ ไม่พบใบงาน");
+        alert("ไม่พบใบงาน");
       } else {
         setResult(data);
       }
@@ -76,7 +76,7 @@ export default function TrackPage() {
           value={sn}
           onChange={(e) => setSn(e.target.value)}
           onKeyDown={(e) => {
-            if (e.key === "Enter") searchOrder(); // ✅ กด Enter ได้
+            if (e.key === "Enter") searchOrder();
           }}
           className="w-full p-3 mb-3 bg-black border border-gray-700 rounded focus:outline-none focus:border-blue-500"
         />
