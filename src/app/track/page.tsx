@@ -1,38 +1,102 @@
-import Link from "next/link";
+"use client";
+
+import { useState } from "react";
+
+type Order = {
+  name: string;
+  phone: string;
+  service: string;
+  details: string;
+  sn: string;
+  status: string;
+  items?: string[];
+  otherItem?: string;
+};
 
 export default function TrackPage() {
-  return (
-    <main className="min-h-screen bg-black text-white flex items-center justify-center relative">
-      
-      {/* 🔙 ปุ่มกลับหน้าหลัก */}
-      <div className="absolute top-4 left-4">
-        <Link
-          href="/"
-          className="text-sm text-gray-400 hover:text-white transition"
-        >
-          ← กลับหน้าหลัก
-        </Link>
-      </div>
+  const [sn, setSn] = useState(""); // ✅ เปลี่ยนจาก keyword → sn
+  const [result, setResult] = useState<Order | null>(null);
+  const [loading, setLoading] = useState(false);
 
-      {/* กล่องเช็คสถานะ */}
-      <div className="bg-zinc-900 p-8 rounded-2xl w-full max-w-md shadow-xl border border-zinc-800">
-        <h1 className="text-2xl font-bold mb-4 text-center">
-          🔍 เช็คสถานะงานซ่อม
-        </h1>
+  const searchOrder = async () => {
+    if (!sn) return alert("กรอก SN");
+
+    setLoading(true);
+
+    try {
+      const res = await fetch("/api/orders/search", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ sn }), // ✅ ส่ง sn อย่างเดียว
+      });
+
+      const data = await res.json();
+
+      if (!data) {
+        alert("ไม่พบข้อมูล");
+        setResult(null);
+      } else {
+        setResult(data);
+      }
+    } catch {
+      alert("❌ error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const renderStatus = (s: string) => {
+    switch (s) {
+      case "quote":
+        return "เสนอราคา";
+      case "repairing":
+        return "กำลังซ่อม";
+      case "waiting_parts":
+        return "รออะไหล่";
+      case "done":
+        return "ซ่อมเสร็จ";
+      default:
+        return "-";
+    }
+  };
+
+  return (
+    <main className="min-h-screen bg-black text-white flex items-center justify-center">
+      <div className="bg-zinc-900 p-6 rounded w-full max-w-md">
+        <h1 className="text-xl mb-4">🔍 เช็คสถานะงานซ่อม</h1>
 
         <input
-          type="text"
-          placeholder="กรอก SN เช่น CRC1234"
-          className="w-full p-3 rounded-xl bg-zinc-800 border border-zinc-700 mb-4 outline-none focus:border-yellow-400"
+          placeholder="กรอก SN"
+          value={sn}
+          onChange={(e) => setSn(e.target.value)}
+          className="w-full p-2 mb-3 bg-black"
         />
 
-        <button className="w-full p-3 rounded-xl bg-gradient-to-r from-yellow-400 to-red-500 text-black font-semibold hover:opacity-90 transition">
-          ค้นหา
+        <button
+          onClick={searchOrder}
+          className="bg-blue-600 w-full py-2"
+        >
+          {loading ? "กำลังค้นหา..." : "ค้นหา"}
         </button>
 
-        <p className="text-xs text-gray-500 mt-4 text-center">
-          * ใส่รหัสงานหรือเบอร์โทรเพื่อตรวจสอบสถานะ
-        </p>
+        {result && (
+          <div className="mt-4 bg-zinc-800 p-3 rounded space-y-1">
+            <div>ชื่อ: {result.name}</div>
+            <div>เบอร์: {result.phone}</div>
+            <div>SN: {result.sn}</div>
+            <div>สถานะ: {renderStatus(result.status)}</div>
+            <div>บริการ: {result.service}</div>
+            <div>รายละเอียด: {result.details}</div>
+            <div>
+              ของที่รับ:{" "}
+              {[...(result.items || []), result.otherItem || ""]
+                .filter(Boolean)
+                .join(", ")}
+            </div>
+          </div>
+        )}
       </div>
     </main>
   );
