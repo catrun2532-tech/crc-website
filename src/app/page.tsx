@@ -68,7 +68,7 @@ export default function Page() {
 
           {/* ✅ ปุ่มใหม่แทนของเดิม */}
           <Link
-            href="/check-job"
+            href="/track"
             className="px-5 py-3 rounded-2xl bg-gradient-to-r from-yellow-400 to-red-500 text-black font-semibold"
           >
             🔍 เช็คใบงาน (ลูกค้า)
