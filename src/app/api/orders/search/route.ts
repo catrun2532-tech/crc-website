@@ -2,33 +2,41 @@ import { NextResponse } from "next/server";
 import connectDB from "@/lib/mongodb";
 import Order from "@/models/Order";
 
-export async function POST(req: Request) {
+export async function GET(req: Request) {
   try {
     await connectDB();
 
-    const { sn } = await req.json();
+    const { searchParams } = new URL(req.url);
+    const q = searchParams.get("q");
 
-    if (!sn) {
-      return NextResponse.json({ error: "no sn" }, { status: 400 });
+    if (!q) {
+      return NextResponse.json(
+        { message: "Missing query" },
+        { status: 400 }
+      );
     }
 
-    const order = await Order.findOne({ sn }).lean();
-
-    if (!order) {
-      return NextResponse.json(null);
-    }
-
-    return NextResponse.json({
-      name: order.name,
-      phone: order.phone,
-      service: order.service,
-      details: order.details,
-      sn: order.sn,
-      status: order.status,
+    const order = await Order.findOne({
+      $or: [
+        { sn: q },
+        { phone: q },
+        { name: q },
+      ],
     });
 
-  } catch (err) {
+    if (!order) {
+      return NextResponse.json(
+        { message: "Not found" },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json(order);
+  } catch (err: any) {
     console.error("❌ SEARCH ERROR:", err);
-    return NextResponse.json({ error: "server error" }, { status: 500 });
+    return NextResponse.json(
+      { message: err.message },
+      { status: 500 }
+    );
   }
 }
