@@ -25,10 +25,14 @@ export default function OrderPage() {
   const [service, setService] = useState("ลงวินโดว์");
   const [details, setDetails] = useState("");
   const [sn, setSn] = useState("");
-  const [status, setStatus] = useState("quote"); // ✅ เปลี่ยนตรงนี้
+  const [status, setStatus] = useState("quote");
 
   const [items, setItems] = useState<string[]>([]);
   const [otherItem, setOtherItem] = useState("");
+
+  // ✅ เพิ่มตรงนี้
+  const [ram, setRam] = useState("");
+  const [ssd, setSsd] = useState("");
 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [orders, setOrders] = useState<Order[]>([]);
@@ -57,6 +61,13 @@ export default function OrderPage() {
       const url = editingId ? `/api/orders/${editingId}` : "/api/orders";
       const method = editingId ? "PUT" : "POST";
 
+      // ✅ รวม RAM / SSD
+      const finalItems = items.map((item) => {
+        if (item === "RAM" && ram) return `RAM (${ram})`;
+        if (item === "SSD" && ssd) return `SSD (${ssd})`;
+        return item;
+      });
+
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
@@ -67,7 +78,7 @@ export default function OrderPage() {
           details,
           sn,
           status,
-          items,
+          items: finalItems, // ✅ ใช้ตัวนี้
           otherItem,
         }),
       });
@@ -90,9 +101,11 @@ export default function OrderPage() {
     setPhone("");
     setDetails("");
     setSn("");
-    setStatus("quote"); // ✅ เปลี่ยนตรงนี้ด้วย
+    setStatus("quote");
     setItems([]);
     setOtherItem("");
+    setRam("");   // ✅ reset
+    setSsd("");   // ✅ reset
     setEditingId(null);
   };
 
@@ -108,85 +121,13 @@ export default function OrderPage() {
     setEditingId(o._id || null);
   };
 
-  const downloadPDF = async (o: Order) => {
-    const { default: jsPDF } = await import("jspdf");
-    const html2canvas = (await import("html2canvas")).default;
-
-    const now = new Date();
-    const dateStr = now.toLocaleDateString("th-TH");
-    const timeStr = now.toLocaleTimeString("th-TH");
-
-    const div = document.createElement("div");
-    div.style.width = "600px";
-    div.style.padding = "20px";
-    div.style.background = "white";
-    div.style.color = "black";
-    div.style.fontFamily = "Tahoma, sans-serif";
-    div.style.border = "2px solid black";
-
-    div.innerHTML = `
-      <div style="text-align:center; margin-bottom:10px;">
-        <h2 style="margin:0;">📄 ใบรับงานซ่อม</h2>
-        <small>Computer Service ร้านCRCPU</small><br/>
-        <small>📞 096-095-6981</small>
-      </div>
-
-      <div style="text-align:right; font-size:12px;">
-        วันที่: ${dateStr} เวลา: ${timeStr}
-      </div>
-
-      <hr/>
-
-      <p><strong>ชื่อลูกค้า:</strong> ${o.name}</p>
-      <p><strong>เบอร์โทร:</strong> ${o.phone}</p>
-      <p><strong>SN:</strong> ${o.sn}</p>
-
-      <p><strong>สิ่งที่นำมาด้วย:</strong> 
-        ${[...(o.items || []), o.otherItem || ""].filter(Boolean).join(", ")}
-      </p>
-
-      <hr/>
-
-      <p><strong>บริการ:</strong> ${o.service}</p>
-      <p><strong>รายละเอียด:</strong> ${o.details}</p>
-      <p><strong>สถานะ:</strong> ${renderStatus(o.status)}</p>
-
-      <hr/>
-
-      <p style="text-align:right; margin-top:40px;">
-        ลงชื่อ ______________________
-      </p>
-    `;
-
-    document.body.appendChild(div);
-
-    const canvas = await html2canvas(div, { scale: 2 });
-    const imgData = canvas.toDataURL("image/png");
-
-    const pdf = new jsPDF("p", "mm", "a4");
-
-    const imgWidth = 190;
-    const imgHeight = (canvas.height * imgWidth) / canvas.width;
-
-    pdf.addImage(imgData, "PNG", 10, 10, imgWidth, imgHeight);
-
-    pdf.save(`order-${o.name}.pdf`);
-
-    document.body.removeChild(div);
-  };
-
   const renderStatus = (s: string) => {
     switch (s) {
-      case "quote":
-        return "เสนอราคา";
-      case "repairing":
-        return "กำลังซ่อม";
-      case "waiting_parts":
-        return "รออะไหล่";
-      case "done":
-        return "ซ่อมเสร็จ";
-      default:
-        return "-";
+      case "quote": return "เสนอราคา";
+      case "repairing": return "กำลังซ่อม";
+      case "waiting_parts": return "รออะไหล่";
+      case "done": return "ซ่อมเสร็จ";
+      default: return "-";
     }
   };
 
@@ -227,10 +168,10 @@ export default function OrderPage() {
         <input placeholder="SN" value={sn} className="block mb-2 p-2 w-full bg-black" onChange={(e) => setSn(e.target.value)} />
 
         <select value={service} className="block mb-2 p-2 w-full bg-black" onChange={(e) => setService(e.target.value)}>
-  <option>ลงวินโดว์</option>
-  <option>กู้ข้อมูล</option>
-  <option>อื่นๆ</option>
-</select>
+          <option>ลงวินโดว์</option>
+          <option>กู้ข้อมูล</option>
+          <option>อื่นๆ</option>
+        </select>
 
         <select value={status} className="block mb-2 p-2 w-full bg-black" onChange={(e) => setStatus(e.target.value)}>
           <option value="quote">เสนอราคา</option>
@@ -241,22 +182,87 @@ export default function OrderPage() {
 
         <textarea placeholder="รายละเอียด" value={details} className="block mb-2 p-2 w-full bg-black" onChange={(e) => setDetails(e.target.value)} />
 
+        {/* 🔥 ITEMS */}
         <div className="mb-2">
           <label className="block mb-1">สิ่งที่นำมาด้วย:</label>
-          <div className="flex gap-4 flex-wrap">
-            {["กระเป๋า", "สายชาร์จ", "อื่นๆ"].map((item) => (
-              <label key={item}>
-                <input
-                  type="checkbox"
-                  checked={items.includes(item)}
-                  onChange={(e) => {
-                    if (e.target.checked) setItems([...items, item]);
-                    else setItems(items.filter((i) => i !== item));
-                  }}
-                /> {item}
-              </label>
-            ))}
-          </div>
+
+          {/* กระเป๋า */}
+          <label className="block">
+            <input type="checkbox"
+              checked={items.includes("กระเป๋า")}
+              onChange={(e) =>
+                e.target.checked
+                  ? setItems([...items, "กระเป๋า"])
+                  : setItems(items.filter(i => i !== "กระเป๋า"))
+              }
+            /> กระเป๋า
+          </label>
+
+          {/* สายชาร์จ */}
+          <label className="block">
+            <input type="checkbox"
+              checked={items.includes("สายชาร์จ")}
+              onChange={(e) =>
+                e.target.checked
+                  ? setItems([...items, "สายชาร์จ"])
+                  : setItems(items.filter(i => i !== "สายชาร์จ"))
+              }
+            /> สายชาร์จ
+          </label>
+
+          {/* RAM */}
+          <label className="block">
+            <input type="checkbox"
+              checked={items.includes("RAM")}
+              onChange={(e) =>
+                e.target.checked
+                  ? setItems([...items, "RAM"])
+                  : setItems(items.filter(i => i !== "RAM"))
+              }
+            /> RAM
+          </label>
+
+          {items.includes("RAM") && (
+            <input
+              className="p-1 bg-black border text-white mt-1"
+              placeholder="เช่น 16GB"
+              value={ram}
+              onChange={(e) => setRam(e.target.value)}
+            />
+          )}
+
+          {/* SSD */}
+          <label className="block mt-2">
+            <input type="checkbox"
+              checked={items.includes("SSD")}
+              onChange={(e) =>
+                e.target.checked
+                  ? setItems([...items, "SSD"])
+                  : setItems(items.filter(i => i !== "SSD"))
+              }
+            /> SSD
+          </label>
+
+          {items.includes("SSD") && (
+            <input
+              className="p-1 bg-black border text-white mt-1"
+              placeholder="เช่น 512GB"
+              value={ssd}
+              onChange={(e) => setSsd(e.target.value)}
+            />
+          )}
+
+          {/* อื่นๆ */}
+          <label className="block mt-2">
+            <input type="checkbox"
+              checked={items.includes("อื่นๆ")}
+              onChange={(e) =>
+                e.target.checked
+                  ? setItems([...items, "อื่นๆ"])
+                  : setItems(items.filter(i => i !== "อื่นๆ"))
+              }
+            /> อื่นๆ
+          </label>
 
           {items.includes("อื่นๆ") && (
             <input
@@ -272,34 +278,28 @@ export default function OrderPage() {
           {editingId ? "💾 อัปเดต" : "💾 บันทึก"}
         </button>
       </div>
-{/* ช่องค้นหา */}
-<input
-  placeholder="🔍 ค้นหาชื่อ / เบอร์ / SN"
-  value={search}
-  onChange={(e) => setSearch(e.target.value)}
-  className="mb-4 p-2 w-full bg-black border border-zinc-700 rounded"
-/>
-      <div className="space-y-2">
-        {filtered.map((o) => (
-          <div key={o._id} className="p-3 bg-zinc-800 rounded">
-            <div>ชื่อ: {o.name}</div>
-            <div>เบอร์: {o.phone}</div>
-            <div>SN: {o.sn}</div>
-            <div>สถานะ: {renderStatus(o.status)}</div>
-            <div>
-              ของที่รับ: {[...(o.items || []), o.otherItem || ""].filter(Boolean).join(", ")}
-            </div>
 
-            <div className="flex gap-2 mt-2">
-              <button onClick={() => editOrder(o)} className="bg-blue-600 px-2 py-1">✏️ แก้ไข</button>
-              <button onClick={() => downloadPDF(o)} className="bg-yellow-500 px-2 py-1 text-black">📄 PDF</button>
-            </div>
+      <input
+        placeholder="🔍 ค้นหา"
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        className="mb-4 p-2 w-full bg-black border"
+      />
+
+      {filtered.map((o) => (
+        <div key={o._id} className="bg-zinc-800 p-3 mb-2">
+          <div>{o.name}</div>
+          <div>{o.phone}</div>
+          <div>{o.sn}</div>
+          <div>{renderStatus(o.status)}</div>
+          <div>
+            {[...(o.items || []), o.otherItem || ""].filter(Boolean).join(", ")}
           </div>
-        ))}
-      </div>
+        </div>
+      ))}
 
-      <Link href="/" className="block mt-6 text-blue-400">
-        ← กลับหน้าแรก
+      <Link href="/" className="text-blue-400 block mt-4">
+        กลับหน้าแรก
       </Link>
     </main>
   );
