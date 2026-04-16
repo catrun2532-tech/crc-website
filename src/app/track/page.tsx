@@ -1,103 +1,47 @@
-"use client";
+<div className="min-h-screen bg-black flex items-center justify-center text-white">
+  <div className="bg-zinc-900 p-6 rounded-xl w-full max-w-md shadow-lg">
 
-import { useState } from "react";
+    <h2 className="text-xl font-bold mb-4 text-center">
+      🔍 เช็คสถานะงานซ่อม
+    </h2>
 
-export default function TrackPage() {
-  const [query, setQuery] = useState("");
-  const [data, setData] = useState<any>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+    <input
+      className="w-full p-3 mb-3 rounded bg-zinc-800 text-white text-lg outline-none"
+      placeholder="กรอก SN / เบอร์ / ชื่อ"
+      value={search}
+      onChange={(e) => setSearch(e.target.value)}
+    />
 
-  const handleSearch = async () => {
-    console.log("CLICKED");
+    <button
+      onClick={handleSearch}
+      className="w-full bg-blue-500 hover:bg-blue-600 p-3 rounded text-lg font-semibold"
+    >
+      ค้นหา
+    </button>
 
-    if (!query) {
-      alert("กรอกข้อมูลก่อน");
-      return;
-    }
+    {data && (
+      <div className="mt-5 bg-zinc-800 p-4 rounded-lg text-base space-y-2">
 
-    setLoading(true);
-    setError("");
-    setData(null);
+        <p><span className="text-gray-400">ชื่อ:</span> {data.name || "-"}</p>
+        <p><span className="text-gray-400">เบอร์:</span> {data.phone || "-"}</p>
+        <p><span className="text-gray-400">SN:</span> {data.sn}</p>
 
-    try {
-      const res = await fetch(`/api/orders/search?q=${query}`);
+        <p>
+          <span className="text-gray-400">สถานะ:</span>{" "}
+          <span className="font-semibold text-blue-400">
+            {statusMap[data.status] || data.status}
+          </span>
+        </p>
 
-      // 🔥 ถ้า status ไม่ใช่ 200
-      if (!res.ok) {
-        const errText = await res.text();
-        console.log("API ERROR:", errText);
-        throw new Error("ไม่พบข้อมูล");
-      }
+        <p><span className="text-gray-400">บริการ:</span> {data.service || "-"}</p>
+        <p><span className="text-gray-400">รายละเอียด:</span> {data.details || "-"}</p>
 
-      const result = await res.json();
+        <hr className="my-2 border-zinc-700" />
 
-      console.log("RESULT:", result);
+        <p><span className="text-gray-400">RAM:</span> {data.ram || "-"}</p>
+        <p><span className="text-gray-400">SSD:</span> {data.ssd || "-"}</p>
 
-      setData(result);
-    } catch (err) {
-      console.error(err);
-      setError("ไม่พบข้อมูล หรือระบบมีปัญหา");
-    }
-
-    setLoading(false);
-  };
-
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-black text-white">
-      <div className="bg-gray-900 p-6 rounded w-96 shadow-lg">
-        <h2 className="mb-3 text-lg font-bold">
-          🔍 เช็คสถานะงานซ่อม
-        </h2>
-
-        {/* INPUT */}
-        <input
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          className="w-full p-2 mb-2 rounded bg-white text-black"
-          placeholder="กรอก SN / เบอร์ / ชื่อ"
-        />
-
-        {/* BUTTON */}
-        <button
-          onClick={handleSearch}
-          className="w-full bg-blue-500 hover:bg-blue-600 p-2 mb-4 rounded"
-        >
-          {loading ? "กำลังค้นหา..." : "ค้นหา"}
-        </button>
-
-        {/* ERROR */}
-        {error && (
-          <div className="bg-red-500 p-2 rounded mb-2 text-sm">
-            {error}
-          </div>
-        )}
-
-        {/* RESULT */}
-        {data && (
-          <div className="bg-gray-800 p-4 rounded text-sm space-y-1">
-            <p>ชื่อ: {data.name || "-"}</p>
-            <p>เบอร์: {data.phone || "-"}</p>
-            <p>SN: {data.sn || "-"}</p>
-
-            <p>
-              สถานะ:{" "}
-              {data.status === "pending"
-                ? "รับงาน"
-                : data.status === "repairing"
-                ? "กำลังซ่อม"
-                : data.status === "waiting_parts"
-                ? "รออะไหล่"
-                : data.status === "done"
-                ? "เสร็จแล้ว"
-                : data.status}
-            </p>
-
-            <p>บริการ: {data.service || "-"}</p>
-            <p>รายละเอียด: {data.details || "-"}</p>
-          </div>
-        )}
       </div>
-    </div>
-  );
-}
+    )}
+  </div>
+</div>
