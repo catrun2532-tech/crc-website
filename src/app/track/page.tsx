@@ -14,7 +14,7 @@ type Order = {
 };
 
 export default function TrackPage() {
-  const [sn, setSn] = useState(""); // ✅ เปลี่ยนจาก keyword → sn
+  const [sn, setSn] = useState("");
   const [result, setResult] = useState<Order | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -29,18 +29,24 @@ export default function TrackPage() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ sn }), // ✅ ส่ง sn อย่างเดียว
+        body: JSON.stringify({ sn }),
       });
 
       const data = await res.json();
 
-      if (!data) {
+      console.log("🔥 API RESULT:", data); // 👈 สำคัญ เอาไว้ debug
+
+      // ✅ รองรับทั้งแบบ { success, order } และ object ตรง ๆ
+      const order = data.order || data;
+
+      if (!order || !order.sn) {
         alert("ไม่พบข้อมูล");
         setResult(null);
       } else {
-        setResult(data);
+        setResult(order);
       }
-    } catch {
+    } catch (err) {
+      console.error(err);
       alert("❌ error");
     } finally {
       setLoading(false);
@@ -57,8 +63,10 @@ export default function TrackPage() {
         return "รออะไหล่";
       case "done":
         return "ซ่อมเสร็จ";
+      case "pending":
+        return "รับงานแล้ว";
       default:
-        return "-";
+        return s || "-";
     }
   };
 
@@ -83,17 +91,17 @@ export default function TrackPage() {
 
         {result && (
           <div className="mt-4 bg-zinc-800 p-3 rounded space-y-1">
-            <div>ชื่อ: {result.name}</div>
-            <div>เบอร์: {result.phone}</div>
+            <div>ชื่อ: {result.name || "-"}</div>
+            <div>เบอร์: {result.phone || "-"}</div>
             <div>SN: {result.sn}</div>
             <div>สถานะ: {renderStatus(result.status)}</div>
-            <div>บริการ: {result.service}</div>
-            <div>รายละเอียด: {result.details}</div>
+            <div>บริการ: {result.service || "-"}</div>
+            <div>รายละเอียด: {result.details || "-"}</div>
             <div>
               ของที่รับ:{" "}
               {[...(result.items || []), result.otherItem || ""]
                 .filter(Boolean)
-                .join(", ")}
+                .join(", ") || "-"}
             </div>
           </div>
         )}
