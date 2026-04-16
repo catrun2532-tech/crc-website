@@ -5,12 +5,12 @@ import Link from "next/link";
 
 type Order = {
   _id?: string;
-  name: string;
-  phone: string;
-  service: string;
-  details: string;
-  sn: string;
-  status: string;
+  name?: string;
+  phone?: string;
+  service?: string;
+  details?: string;
+  sn?: string;
+  status?: string;
   items?: string[];
   otherItem?: string;
 };
@@ -36,9 +36,13 @@ export default function OrderPage() {
   const [loading, setLoading] = useState(false);
 
   const loadOrders = async () => {
-    const res = await fetch("/api/orders");
-    const data = await res.json();
-    setOrders(data);
+    try {
+      const res = await fetch("/api/orders");
+      const data = await res.json();
+      setOrders(Array.isArray(data) ? data : []);
+    } catch {
+      setOrders([]);
+    }
   };
 
   useEffect(() => {
@@ -78,8 +82,9 @@ export default function OrderPage() {
 
       resetForm();
       loadOrders();
-    } catch {
-      alert("❌ error");
+    } catch (err) {
+      console.error(err);
+      alert("❌ error (เช็ค API)");
     } finally {
       setLoading(false);
     }
@@ -97,85 +102,18 @@ export default function OrderPage() {
   };
 
   const editOrder = (o: Order) => {
-    setName(o.name);
-    setPhone(o.phone);
-    setService(o.service);
-    setDetails(o.details);
-    setSn(o.sn);
+    setName(o.name || "");
+    setPhone(o.phone || "");
+    setService(o.service || "ลงวินโดว์");
+    setDetails(o.details || "");
+    setSn(o.sn || "");
     setStatus(o.status || "quote");
     setItems(o.items || []);
     setOtherItem(o.otherItem || "");
     setEditingId(o._id || null);
   };
 
-  const downloadPDF = async (o: Order) => {
-    const { default: jsPDF } = await import("jspdf");
-    const html2canvas = (await import("html2canvas")).default;
-
-    const now = new Date();
-    const dateStr = now.toLocaleDateString("th-TH");
-    const timeStr = now.toLocaleTimeString("th-TH");
-
-    const div = document.createElement("div");
-    div.style.width = "600px";
-    div.style.padding = "20px";
-    div.style.background = "white";
-    div.style.color = "black";
-    div.style.fontFamily = "Tahoma, sans-serif";
-    div.style.border = "2px solid black";
-
-    div.innerHTML = `
-      <div style="text-align:center; margin-bottom:10px;">
-        <h2 style="margin:0;">📄 ใบรับงานซ่อม</h2>
-        <small>Computer Service ร้านCRCPU</small><br/>
-        <small>📞 096-095-6981</small>
-      </div>
-
-      <div style="text-align:right; font-size:12px;">
-        วันที่: ${dateStr} เวลา: ${timeStr}
-      </div>
-
-      <hr/>
-
-      <p><strong>ชื่อลูกค้า:</strong> ${o.name}</p>
-      <p><strong>เบอร์โทร:</strong> ${o.phone}</p>
-      <p><strong>SN:</strong> ${o.sn}</p>
-
-      <p><strong>สิ่งที่นำมาด้วย:</strong> 
-        ${[...(o.items || []), o.otherItem || ""].filter(Boolean).join(", ")}
-      </p>
-
-      <hr/>
-
-      <p><strong>บริการ:</strong> ${o.service}</p>
-      <p><strong>รายละเอียด:</strong> ${o.details}</p>
-      <p><strong>สถานะ:</strong> ${renderStatus(o.status)}</p>
-
-      <hr/>
-
-      <p style="text-align:right; margin-top:40px;">
-        ลงชื่อ ______________________
-      </p>
-    `;
-
-    document.body.appendChild(div);
-
-    const canvas = await html2canvas(div, { scale: 2 });
-    const imgData = canvas.toDataURL("image/png");
-
-    const pdf = new jsPDF("p", "mm", "a4");
-
-    const imgWidth = 190;
-    const imgHeight = (canvas.height * imgWidth) / canvas.width;
-
-    pdf.addImage(imgData, "PNG", 10, 10, imgWidth, imgHeight);
-
-    pdf.save(`order-${o.name}.pdf`);
-
-    document.body.removeChild(div);
-  };
-
-  const renderStatus = (s: string) => {
+  const renderStatus = (s?: string) => {
     switch (s) {
       case "quote":
         return "เสนอราคา";
@@ -268,24 +206,24 @@ export default function OrderPage() {
           )}
         </div>
 
-        <button onClick={saveOrder} className="bg-green-600 px-4 py-2">
-          {editingId ? "💾 อัปเดต" : "💾 บันทึก"}
+        <button onClick={saveOrder} disabled={loading} className="bg-green-600 px-4 py-2">
+          {loading ? "กำลังบันทึก..." : editingId ? "💾 อัปเดต" : "💾 บันทึก"}
         </button>
       </div>
 
       <input
-        placeholder="🔍 ค้นหาชื่อ / เบอร์ / SN"
+        placeholder="🔍 ค้นหา"
         value={search}
         onChange={(e) => setSearch(e.target.value)}
         className="mb-4 p-2 w-full bg-black border border-zinc-700 rounded"
       />
 
       <div className="space-y-2">
-        {filtered.map((o) => (
-          <div key={o._id} className="p-3 bg-zinc-800 rounded">
-            <div>ชื่อ: {o.name}</div>
-            <div>เบอร์: {o.phone}</div>
-            <div>SN: {o.sn}</div>
+        {filtered.map((o, i) => (
+          <div key={o._id || i} className="p-3 bg-zinc-800 rounded">
+            <div>ชื่อ: {o.name || "-"}</div>
+            <div>เบอร์: {o.phone || "-"}</div>
+            <div>SN: {o.sn || "-"}</div>
             <div>สถานะ: {renderStatus(o.status)}</div>
             <div>
               ของที่รับ: {[...(o.items || []), o.otherItem || ""].filter(Boolean).join(", ")}
@@ -293,7 +231,6 @@ export default function OrderPage() {
 
             <div className="flex gap-2 mt-2">
               <button onClick={() => editOrder(o)} className="bg-blue-600 px-2 py-1">✏️ แก้ไข</button>
-              <button onClick={() => downloadPDF(o)} className="bg-yellow-500 px-2 py-1 text-black">📄 PDF</button>
             </div>
           </div>
         ))}
