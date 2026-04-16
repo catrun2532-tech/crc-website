@@ -4,11 +4,11 @@ import { useState } from "react";
 
 export default function TrackPage() {
   const [search, setSearch] = useState("");
-  const [data, setData] = useState<any>(null);
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-  const statusMap: any = {
+  const statusMap = {
     pending: "รับเครื่องแล้ว",
-    checking: "กำลังตรวจสอบ",
     quote: "เสนอราคา",
     repairing: "กำลังซ่อม",
     waiting_parts: "รออะไหล่",
@@ -16,12 +16,40 @@ export default function TrackPage() {
   };
 
   const handleSearch = async () => {
+    if (!search) {
+      alert("กรุณากรอกข้อมูล");
+      return;
+    }
+
     try {
-      const res = await fetch(`/api/orders/search?query=${search}`);
+      setLoading(true);
+      setData(null);
+
+      const res = await fetch(`/api/orders/search?q=${search}`);
+
+      // 🔥 เช็ค status
+      if (!res.ok) {
+        alert("ไม่พบข้อมูล");
+        setLoading(false);
+        return;
+      }
+
       const result = await res.json();
+
+      console.log("RESULT:", result); // debug
+
+      if (!result) {
+        alert("ไม่พบข้อมูล");
+        setLoading(false);
+        return;
+      }
+
       setData(result);
     } catch (err) {
+      console.error(err);
       alert("error fetch");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -44,15 +72,16 @@ export default function TrackPage() {
           onClick={handleSearch}
           className="w-full bg-blue-500 hover:bg-blue-600 p-3 rounded text-lg font-semibold"
         >
-          ค้นหา
+          {loading ? "กำลังค้นหา..." : "ค้นหา"}
         </button>
 
+        {/* 🔥 แสดงผล */}
         {data && (
           <div className="mt-5 bg-zinc-800 p-4 rounded-lg text-base space-y-2">
 
             <p><span className="text-gray-400">ชื่อ:</span> {data.name || "-"}</p>
             <p><span className="text-gray-400">เบอร์:</span> {data.phone || "-"}</p>
-            <p><span className="text-gray-400">SN:</span> {data.sn}</p>
+            <p><span className="text-gray-400">SN:</span> {data.sn || "-"}</p>
 
             <p>
               <span className="text-gray-400">สถานะ:</span>{" "}
