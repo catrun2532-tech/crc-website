@@ -227,10 +227,10 @@ export default function OrderPage() {
         <input placeholder="SN" value={sn} className="block mb-2 p-2 w-full bg-black" onChange={(e) => setSn(e.target.value)} />
 
         <select value={service} className="block mb-2 p-2 w-full bg-black" onChange={(e) => setService(e.target.value)}>
-          <option>ลงวินโดว์</option>
-          <option>กู้ข้อมูล</option>
-          <option>อัปเกรด</option>
-        </select>
+  <option>ลงวินโดว์</option>
+  <option>กู้ข้อมูล</option>
+  <option>อื่นๆ</option>
+</select>
 
         <select value={status} className="block mb-2 p-2 w-full bg-black" onChange={(e) => setStatus(e.target.value)}>
           <option value="quote">เสนอราคา</option>
