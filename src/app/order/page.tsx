@@ -29,8 +29,6 @@ export default function OrderPage() {
 
   const [items, setItems] = useState<string[]>([]);
   const [otherItem, setOtherItem] = useState("");
-
-  // ✅ เพิ่มตรงนี้
   const [ram, setRam] = useState("");
   const [ssd, setSsd] = useState("");
 
@@ -61,7 +59,6 @@ export default function OrderPage() {
       const url = editingId ? `/api/orders/${editingId}` : "/api/orders";
       const method = editingId ? "PUT" : "POST";
 
-      // ✅ รวม RAM / SSD
       const finalItems = items.map((item) => {
         if (item === "RAM" && ram) return `RAM (${ram})`;
         if (item === "SSD" && ssd) return `SSD (${ssd})`;
@@ -78,7 +75,7 @@ export default function OrderPage() {
           details,
           sn,
           status,
-          items: finalItems, // ✅ ใช้ตัวนี้
+          items: finalItems,
           otherItem,
         }),
       });
@@ -104,8 +101,8 @@ export default function OrderPage() {
     setStatus("quote");
     setItems([]);
     setOtherItem("");
-    setRam("");   // ✅ reset
-    setSsd("");   // ✅ reset
+    setRam("");
+    setSsd("");
     setEditingId(null);
   };
 
@@ -162,6 +159,7 @@ export default function OrderPage() {
     <main className="min-h-screen bg-black text-white p-4">
       <h1 className="text-2xl mb-4">ระบบจัดการร้าน</h1>
 
+      {/* 🔥 FORM */}
       <div className="bg-zinc-900 p-4 rounded mb-6">
         <input placeholder="ชื่อ" value={name} className="block mb-2 p-2 w-full bg-black" onChange={(e) => setName(e.target.value)} />
         <input placeholder="เบอร์" value={phone} className="block mb-2 p-2 w-full bg-black" onChange={(e) => setPhone(e.target.value)} />
@@ -184,93 +182,32 @@ export default function OrderPage() {
 
         {/* 🔥 ITEMS */}
         <div className="mb-2">
-          <label className="block mb-1">สิ่งที่นำมาด้วย:</label>
+          <label className="block">สิ่งที่นำมาด้วย:</label>
 
-          {/* กระเป๋า */}
-          <label className="block">
-            <input type="checkbox"
-              checked={items.includes("กระเป๋า")}
-              onChange={(e) =>
-                e.target.checked
-                  ? setItems([...items, "กระเป๋า"])
-                  : setItems(items.filter(i => i !== "กระเป๋า"))
-              }
-            /> กระเป๋า
-          </label>
-
-          {/* สายชาร์จ */}
-          <label className="block">
-            <input type="checkbox"
-              checked={items.includes("สายชาร์จ")}
-              onChange={(e) =>
-                e.target.checked
-                  ? setItems([...items, "สายชาร์จ"])
-                  : setItems(items.filter(i => i !== "สายชาร์จ"))
-              }
-            /> สายชาร์จ
-          </label>
-
-          {/* RAM */}
-          <label className="block">
-            <input type="checkbox"
-              checked={items.includes("RAM")}
-              onChange={(e) =>
-                e.target.checked
-                  ? setItems([...items, "RAM"])
-                  : setItems(items.filter(i => i !== "RAM"))
-              }
-            /> RAM
-          </label>
+          {["กระเป๋า", "สายชาร์จ", "RAM", "SSD", "อื่นๆ"].map((item) => (
+            <label key={item} className="block">
+              <input
+                type="checkbox"
+                checked={items.includes(item)}
+                onChange={(e) =>
+                  e.target.checked
+                    ? setItems([...items, item])
+                    : setItems(items.filter(i => i !== item))
+                }
+              /> {item}
+            </label>
+          ))}
 
           {items.includes("RAM") && (
-            <input
-              className="p-1 bg-black border text-white mt-1"
-              placeholder="เช่น 16GB"
-              value={ram}
-              onChange={(e) => setRam(e.target.value)}
-            />
+            <input className="p-1 mt-1 bg-black border" placeholder="RAM เช่น 16GB" value={ram} onChange={(e) => setRam(e.target.value)} />
           )}
-
-          {/* SSD */}
-          <label className="block mt-2">
-            <input type="checkbox"
-              checked={items.includes("SSD")}
-              onChange={(e) =>
-                e.target.checked
-                  ? setItems([...items, "SSD"])
-                  : setItems(items.filter(i => i !== "SSD"))
-              }
-            /> SSD
-          </label>
 
           {items.includes("SSD") && (
-            <input
-              className="p-1 bg-black border text-white mt-1"
-              placeholder="เช่น 512GB"
-              value={ssd}
-              onChange={(e) => setSsd(e.target.value)}
-            />
+            <input className="p-1 mt-1 bg-black border" placeholder="SSD เช่น 512GB" value={ssd} onChange={(e) => setSsd(e.target.value)} />
           )}
 
-          {/* อื่นๆ */}
-          <label className="block mt-2">
-            <input type="checkbox"
-              checked={items.includes("อื่นๆ")}
-              onChange={(e) =>
-                e.target.checked
-                  ? setItems([...items, "อื่นๆ"])
-                  : setItems(items.filter(i => i !== "อื่นๆ"))
-              }
-            /> อื่นๆ
-          </label>
-
           {items.includes("อื่นๆ") && (
-            <input
-              className="mt-2 p-2 w-full bg-black"
-              placeholder="ระบุอื่นๆ"
-              value={otherItem}
-              onChange={(e) => setOtherItem(e.target.value)}
-            />
+            <input className="mt-2 p-2 w-full bg-black" placeholder="อื่นๆ" value={otherItem} onChange={(e) => setOtherItem(e.target.value)} />
           )}
         </div>
 
@@ -279,6 +216,7 @@ export default function OrderPage() {
         </button>
       </div>
 
+      {/* 🔍 SEARCH */}
       <input
         placeholder="🔍 ค้นหา"
         value={search}
@@ -286,14 +224,34 @@ export default function OrderPage() {
         className="mb-4 p-2 w-full bg-black border"
       />
 
+      {/* 📦 LIST */}
       {filtered.map((o) => (
-        <div key={o._id} className="bg-zinc-800 p-3 mb-2">
-          <div>{o.name}</div>
-          <div>{o.phone}</div>
-          <div>{o.sn}</div>
-          <div>{renderStatus(o.status)}</div>
-          <div>
+        <div key={o._id} className="bg-zinc-800 p-3 mb-3 rounded">
+          <div>ชื่อ: {o.name}</div>
+          <div>เบอร์: {o.phone}</div>
+          <div>SN: {o.sn}</div>
+          <div>สถานะ: {renderStatus(o.status)}</div>
+
+          <div className="mt-1 text-sm text-gray-300">
             {[...(o.items || []), o.otherItem || ""].filter(Boolean).join(", ")}
+          </div>
+
+          {/* 🔥 ปุ่ม */}
+          <div className="mt-3 flex gap-2">
+            <button
+              onClick={() => editOrder(o)}
+              className="bg-blue-500 px-3 py-1 rounded"
+            >
+              ✏️ แก้ไข
+            </button>
+
+            <a
+              href={`/api/orders/pdf/${o._id}`}
+              target="_blank"
+              className="bg-yellow-500 px-3 py-1 rounded text-black"
+            >
+              📄 PDF
+            </a>
           </div>
         </div>
       ))}
