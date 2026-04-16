@@ -25,7 +25,7 @@ export default function OrderPage() {
   const [service, setService] = useState("ลงวินโดว์");
   const [details, setDetails] = useState("");
   const [sn, setSn] = useState("");
-  const [status, setStatus] = useState("quote"); // ✅ เปลี่ยนตรงนี้
+  const [status, setStatus] = useState("quote");
 
   const [items, setItems] = useState<string[]>([]);
   const [otherItem, setOtherItem] = useState("");
@@ -90,7 +90,7 @@ export default function OrderPage() {
     setPhone("");
     setDetails("");
     setSn("");
-    setStatus("quote"); // ✅ เปลี่ยนตรงนี้ด้วย
+    setStatus("quote");
     setItems([]);
     setOtherItem("");
     setEditingId(null);
@@ -227,10 +227,10 @@ export default function OrderPage() {
         <input placeholder="SN" value={sn} className="block mb-2 p-2 w-full bg-black" onChange={(e) => setSn(e.target.value)} />
 
         <select value={service} className="block mb-2 p-2 w-full bg-black" onChange={(e) => setService(e.target.value)}>
-  <option>ลงวินโดว์</option>
-  <option>กู้ข้อมูล</option>
-  <option>อื่นๆ</option>
-</select>
+          <option>ลงวินโดว์</option>
+          <option>กู้ข้อมูล</option>
+          <option>อื่นๆ</option>
+        </select>
 
         <select value={status} className="block mb-2 p-2 w-full bg-black" onChange={(e) => setStatus(e.target.value)}>
           <option value="quote">เสนอราคา</option>
@@ -272,13 +272,14 @@ export default function OrderPage() {
           {editingId ? "💾 อัปเดต" : "💾 บันทึก"}
         </button>
       </div>
-{/* ช่องค้นหา */}
-<input
-  placeholder="🔍 ค้นหาชื่อ / เบอร์ / SN"
-  value={search}
-  onChange={(e) => setSearch(e.target.value)}
-  className="mb-4 p-2 w-full bg-black border border-zinc-700 rounded"
-/>
+
+      <input
+        placeholder="🔍 ค้นหาชื่อ / เบอร์ / SN"
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        className="mb-4 p-2 w-full bg-black border border-zinc-700 rounded"
+      />
+
       <div className="space-y-2">
         {filtered.map((o) => (
           <div key={o._id} className="p-3 bg-zinc-800 rounded">
