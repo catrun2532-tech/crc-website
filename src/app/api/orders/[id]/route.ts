@@ -25,9 +25,34 @@ export async function PUT(
   await connectDB();
   const body = await req.json();
 
-  const updated = await Order.findByIdAndUpdate(id, body, { new: true });
+  // 🔥 clean ค่า status
+  if (body.status) {
+    body.status = body.status.trim().toLowerCase();
+  }
 
-  return NextResponse.json(updated);
+  // 🔥 validation กันพัง
+  const allowedStatus = ["quote", "repairing", "waiting_parts", "done"];
+  if (body.status && !allowedStatus.includes(body.status)) {
+    return NextResponse.json(
+      { error: "Invalid status value" },
+      { status: 400 }
+    );
+  }
+
+  try {
+    const updated = await Order.findByIdAndUpdate(id, body, {
+      new: true,
+      runValidators: true, // 🔥 สำคัญ
+    });
+
+    return NextResponse.json(updated);
+  } catch (error) {
+    console.error("UPDATE ERROR:", error);
+    return NextResponse.json(
+      { error: "Update failed" },
+      { status: 500 }
+    );
+  }
 }
 
 // DELETE
