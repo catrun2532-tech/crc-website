@@ -1,8 +1,23 @@
 import { NextResponse } from "next/server";
-import connectDB from "@/lib/mongodb"; // ✅ แก้ตรงนี้
+import connectDB from "@/lib/mongodb";
 import mongoose from "mongoose";
 
 export const dynamic = "force-dynamic";
+
+// helper: clean + validate status
+function normalizeStatus(status: any) {
+  if (!status) return "quote";
+
+  const clean = String(status).trim().toLowerCase();
+
+  const allowed = ["quote", "repairing", "waiting_parts", "done"];
+
+  if (!allowed.includes(clean)) {
+    throw new Error("Invalid status: " + clean);
+  }
+
+  return clean;
+}
 
 // schema
 const OrderSchema = new mongoose.Schema(
@@ -15,14 +30,14 @@ const OrderSchema = new mongoose.Schema(
 
     status: {
       type: String,
-      enum: ["pending", "repairing", "waiting_parts", "done"],
-      default: "pending",
+      enum: ["quote", "repairing", "waiting_parts", "done"], // ✅ แก้ตรงนี้
+      default: "quote", // ✅ แก้ตรงนี้
     },
   },
   { timestamps: true }
 );
 
-// ✅ กัน model ซ้ำ (สำคัญมากใน Next.js)
+// กัน model ซ้ำ
 const Order =
   mongoose.models.Order || mongoose.model("Order", OrderSchema);
 
@@ -40,13 +55,15 @@ export async function POST(req: Request) {
       );
     }
 
+    const status = normalizeStatus(body.status);
+
     const order = await Order.create({
       name: body.name,
       phone: body.phone,
       service: body.service,
       details: body.details || "",
       sn: body.sn || "",
-      status: body.status || "pending",
+      status,
     });
 
     return NextResponse.json({ success: true, order });
