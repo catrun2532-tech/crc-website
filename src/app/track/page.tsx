@@ -4,10 +4,10 @@ import { useState } from "react";
 
 export default function TrackPage() {
   const [search, setSearch] = useState("");
-  const [data, setData] = useState(null);
+  const [data, setData] = useState<any>(null); // ✅ กัน TS error
   const [loading, setLoading] = useState(false);
 
-  const statusMap = {
+  const statusMap: any = {
     pending: "รับเครื่องแล้ว",
     quote: "เสนอราคา",
     repairing: "กำลังซ่อม",
@@ -27,20 +27,12 @@ export default function TrackPage() {
 
       const res = await fetch(`/api/orders/search?q=${search}`);
 
-      // 🔥 เช็ค status
-      if (!res.ok) {
-        alert("ไม่พบข้อมูล");
-        setLoading(false);
-        return;
-      }
-
       const result = await res.json();
 
-      console.log("RESULT:", result); // debug
+      console.log("RESULT:", result);
 
-      if (!result) {
+      if (!res.ok || !result) {
         alert("ไม่พบข้อมูล");
-        setLoading(false);
         return;
       }
 
@@ -75,28 +67,27 @@ export default function TrackPage() {
           {loading ? "กำลังค้นหา..." : "ค้นหา"}
         </button>
 
-        {/* 🔥 แสดงผล */}
         {data && (
           <div className="mt-5 bg-zinc-800 p-4 rounded-lg text-base space-y-2">
 
-            <p><span className="text-gray-400">ชื่อ:</span> {data.name || "-"}</p>
-            <p><span className="text-gray-400">เบอร์:</span> {data.phone || "-"}</p>
-            <p><span className="text-gray-400">SN:</span> {data.sn || "-"}</p>
+            <p>ชื่อ: {data?.name || "-"}</p>
+            <p>เบอร์: {data?.phone || "-"}</p>
+            <p>SN: {data?.sn || "-"}</p>
 
             <p>
-              <span className="text-gray-400">สถานะ:</span>{" "}
-              <span className="font-semibold text-blue-400">
-                {statusMap[data.status] || data.status}
+              สถานะ:{" "}
+              <span className="text-blue-400 font-semibold">
+                {statusMap[data?.status] || data?.status}
               </span>
             </p>
 
-            <p><span className="text-gray-400">บริการ:</span> {data.service || "-"}</p>
-            <p><span className="text-gray-400">รายละเอียด:</span> {data.details || "-"}</p>
+            <p>บริการ: {data?.service || "-"}</p>
+            <p>รายละเอียด: {data?.details || "-"}</p>
 
-            <hr className="my-2 border-zinc-700" />
+            <hr className="border-zinc-700" />
 
-            <p><span className="text-gray-400">RAM:</span> {data.ram || "-"}</p>
-            <p><span className="text-gray-400">SSD:</span> {data.ssd || "-"}</p>
+            <p>RAM: {data?.ram || "-"}</p>
+            <p>SSD: {data?.ssd || "-"}</p>
 
           </div>
         )}
