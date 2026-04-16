@@ -6,24 +6,38 @@ export default function TrackPage() {
   const [query, setQuery] = useState("");
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const handleSearch = async () => {
-    console.log("CLICKED"); // ✅ เช็คว่าปุ่มทำงานไหม
+    console.log("CLICKED");
 
-    if (!query) return alert("กรอกข้อมูลก่อน");
+    if (!query) {
+      alert("กรอกข้อมูลก่อน");
+      return;
+    }
 
     setLoading(true);
+    setError("");
+    setData(null);
 
     try {
       const res = await fetch(`/api/orders/search?q=${query}`);
+
+      // 🔥 ถ้า status ไม่ใช่ 200
+      if (!res.ok) {
+        const errText = await res.text();
+        console.log("API ERROR:", errText);
+        throw new Error("ไม่พบข้อมูล");
+      }
+
       const result = await res.json();
 
-      console.log("RESULT:", result); // ✅ สำคัญมาก
+      console.log("RESULT:", result);
 
       setData(result);
     } catch (err) {
       console.error(err);
-      alert("error fetch");
+      setError("ไม่พบข้อมูล หรือระบบมีปัญหา");
     }
 
     setLoading(false);
@@ -52,13 +66,33 @@ export default function TrackPage() {
           {loading ? "กำลังค้นหา..." : "ค้นหา"}
         </button>
 
+        {/* ERROR */}
+        {error && (
+          <div className="bg-red-500 p-2 rounded mb-2 text-sm">
+            {error}
+          </div>
+        )}
+
         {/* RESULT */}
         {data && (
-          <div className="bg-gray-800 p-4 rounded text-sm">
+          <div className="bg-gray-800 p-4 rounded text-sm space-y-1">
             <p>ชื่อ: {data.name || "-"}</p>
             <p>เบอร์: {data.phone || "-"}</p>
             <p>SN: {data.sn || "-"}</p>
-            <p>สถานะ: {data.status || "-"}</p>
+
+            <p>
+              สถานะ:{" "}
+              {data.status === "pending"
+                ? "รับงาน"
+                : data.status === "repairing"
+                ? "กำลังซ่อม"
+                : data.status === "waiting_parts"
+                ? "รออะไหล่"
+                : data.status === "done"
+                ? "เสร็จแล้ว"
+                : data.status}
+            </p>
+
             <p>บริการ: {data.service || "-"}</p>
             <p>รายละเอียด: {data.details || "-"}</p>
           </div>
