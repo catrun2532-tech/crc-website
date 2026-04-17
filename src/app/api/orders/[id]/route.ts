@@ -7,6 +7,7 @@ function normalizeStatus(status: any) {
   if (!status) return "quote";
 
   const clean = String(status).trim().toLowerCase();
+
   const allowed = ["quote", "repairing", "waiting_parts", "done"];
 
   if (!allowed.includes(clean)) {
@@ -16,12 +17,13 @@ function normalizeStatus(status: any) {
   return clean;
 }
 
+// 🔥 helper กัน items เพี้ยน
 function normalizeItems(items: any): string[] {
   if (!Array.isArray(items)) return [];
   return items.map((i) => String(i).trim()).filter(Boolean);
 }
 
-// ✅ GET
+// ✅ GET by id + รองรับ PDF
 export async function GET(
   req: Request,
   context: { params: Promise<{ id: string }> }
@@ -87,7 +89,6 @@ export async function GET(
       return new Response(html, {
         headers: {
           "Content-Type": "text/html; charset=utf-8",
-          "Content-Disposition": "inline", // 🔥 สำคัญ
         },
       });
     }
@@ -103,7 +104,7 @@ export async function GET(
   }
 }
 
-// ✅ PUT
+// ✅ PUT update
 export async function PUT(
   req: Request,
   context: { params: Promise<{ id: string }> }
@@ -122,6 +123,8 @@ export async function PUT(
       {
         ...body,
         status,
+
+        // 🔥 clean data ก่อน save
         items: normalizeItems(body.items),
         otherItem: (body.otherItem || "").trim(),
         ram: body.ram ? Number(body.ram) : null,
