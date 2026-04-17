@@ -19,24 +19,30 @@ export async function GET(req: Request) {
         { phone: q },
         { name: q },
       ],
-    }).lean(); // ✅ สำคัญ (แปลงเป็น object ธรรมดา)
+    }).lean();
 
-    // ❌ ถ้าไม่เจอ → return null (ไม่ใช่ error)
     if (!order) {
       return NextResponse.json(null);
     }
 
-    // ✅ ส่งเฉพาะ field ที่ใช้จริง (กัน undefined)
+    // 🔍 DEBUG ดูค่าจริงใน server
+    console.log("ORDER FOUND:", order);
+
     return NextResponse.json({
-      id: order._id,
-      name: order.name || "",
-      phone: order.phone || "",
-      sn: order.sn || "",
-      service: order.service || "",
-      details: order.details || "",
-      ram: order.ram || "",
-      ssd: order.ssd || "",
-      status: order.status || "",
+      id: order._id?.toString(),
+
+      name: order.name ?? "",
+      phone: order.phone ?? "",
+      sn: order.sn ?? "",
+
+      service: order.service ?? "",
+      details: order.details ?? "",
+
+      // ✅ ใช้ ?? แทน || (กันค่า 0 หาย)
+      ram: order.ram ?? null,
+      ssd: order.ssd ?? null,
+
+      status: order.status ?? "",
     });
 
   } catch (err: any) {
