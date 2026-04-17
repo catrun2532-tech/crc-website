@@ -17,6 +17,12 @@ function normalizeStatus(status: any) {
   return clean;
 }
 
+// 🔥 helper กัน items เพี้ยน
+function normalizeItems(items: any): string[] {
+  if (!Array.isArray(items)) return [];
+  return items.map((i) => String(i).trim()).filter(Boolean);
+}
+
 // ✅ GET by id + รองรับ PDF
 export async function GET(
   req: Request,
@@ -33,7 +39,6 @@ export async function GET(
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
 
-    // 🔥 ถ้ามี ?pdf=true → ส่ง PDF (HTML)
     const { searchParams } = new URL(req.url);
     const isPDF = searchParams.get("pdf");
 
@@ -68,6 +73,10 @@ export async function GET(
               <p>บริการ: ${order.service || "-"}</p>
               <p>รายละเอียด: ${order.details || "-"}</p>
               <p>สถานะ: ${order.status || "-"}</p>
+
+              <p>RAM: ${order.ram ? order.ram + " GB" : "-"}</p>
+              <p>SSD: ${order.ssd ? order.ssd + " GB" : "-"}</p>
+
               <p>ของที่รับ: ${itemsText || "-"}</p>
 
               <br/><br/>
@@ -84,7 +93,6 @@ export async function GET(
       });
     }
 
-    // ✅ ปกติ return json
     return NextResponse.json(order);
   } catch (error: any) {
     console.error("GET ERROR:", error.message);
@@ -112,7 +120,16 @@ export async function PUT(
 
     const updated = await Order.findByIdAndUpdate(
       id,
-      { ...body, status },
+      {
+        ...body,
+        status,
+
+        // 🔥 clean data ก่อน save
+        items: normalizeItems(body.items),
+        otherItem: (body.otherItem || "").trim(),
+        ram: body.ram ? Number(body.ram) : null,
+        ssd: body.ssd ? Number(body.ssd) : null,
+      },
       { new: true }
     );
 
