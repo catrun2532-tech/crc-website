@@ -19,50 +19,60 @@ function normalizeStatus(status: any) {
   return clean;
 }
 
-// ✅ schema (เพิ่ม items + otherItem + ram + ssd)
-const OrderSchema = new mongoose.Schema(
-  {
-    name: { type: String, required: true },
-    phone: { type: String, required: true },
-    service: { type: String, required: true },
-    details: { type: String },
-    sn: { type: String },
+// 🔥 helper: clean items กันค่าพัง
+function normalizeItems(items: any): string[] {
+  if (!Array.isArray(items)) return [];
 
-    // 🔥 เพิ่มตรงนี้ (ตัวแก้ปัญหา)
-    items: {
-      type: [String],
-      default: [],
-    },
-
-    otherItem: {
-      type: String,
-      default: "",
-    },
-
-    ram: { type: Number, default: null },
-    ssd: { type: Number, default: null },
-
-    status: {
-      type: String,
-      enum: ["quote", "repairing", "waiting_parts", "done"],
-      default: "quote",
-    },
-  },
-  { timestamps: true }
-);
+  return items
+    .map((i) => String(i).trim())
+    .filter(Boolean);
+}
 
 // กัน model ซ้ำ
 const Order =
-  mongoose.models.Order || mongoose.model("Order", OrderSchema);
+  mongoose.models.Order ||
+  mongoose.model(
+    "Order",
+    new mongoose.Schema(
+      {
+        name: { type: String, required: true },
+        phone: { type: String, required: true },
+        service: { type: String, required: true },
+        details: { type: String },
+        sn: { type: String },
 
-// 👉 POST (สร้าง)
+        // 🔥 FIX หลัก
+        items: {
+          type: [String],
+          default: [],
+        },
+
+        otherItem: {
+          type: String,
+          default: "",
+        },
+
+        ram: { type: Number, default: null },
+        ssd: { type: Number, default: null },
+
+        status: {
+          type: String,
+          enum: ["quote", "repairing", "waiting_parts", "done"],
+          default: "quote",
+        },
+      },
+      { timestamps: true }
+    )
+  );
+
+// 👉 POST
 export async function POST(req: Request) {
   try {
     await connectDB();
 
     const body = await req.json();
 
-    console.log("🔥 BODY:", body); // debug
+    console.log("🔥 BODY:", body);
 
     if (!body.name || !body.phone || !body.service) {
       return NextResponse.json(
@@ -80,12 +90,12 @@ export async function POST(req: Request) {
       details: body.details || "",
       sn: body.sn || "",
 
-      // 🔥 ตัวสำคัญ
-      items: body.items || [],
-      otherItem: body.otherItem || "",
+      // 🔥 clean ก่อน save
+      items: normalizeItems(body.items),
+      otherItem: (body.otherItem || "").trim(),
 
-      ram: body.ram ?? null,
-      ssd: body.ssd ?? null,
+      ram: body.ram ? Number(body.ram) : null,
+      ssd: body.ssd ? Number(body.ssd) : null,
 
       status,
     });
@@ -100,7 +110,7 @@ export async function POST(req: Request) {
   }
 }
 
-// 👉 GET (ทั้งหมด)
+// 👉 GET
 export async function GET() {
   try {
     await connectDB();
