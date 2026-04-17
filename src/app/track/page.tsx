@@ -85,11 +85,11 @@ export default function TrackPage() {
 
             <hr className="border-zinc-700" />
 
-            {/* 🔥 แสดง RAM / SSD */}
+            {/* 🔥 RAM / SSD */}
             <p>RAM: {data?.ram ? `${data.ram} GB` : "-"}</p>
             <p>SSD: {data?.ssd ? `${data.ssd} GB` : "-"}</p>
 
-            {/* 🔥 แสดงอุปกรณ์ */}
+            {/* 🔥 เพิ่มตรงนี้ */}
             <p>
               อุปกรณ์ที่นำมา:{" "}
               {[
