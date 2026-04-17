@@ -4,7 +4,7 @@ import { useState } from "react";
 
 export default function TrackPage() {
   const [search, setSearch] = useState("");
-  const [data, setData] = useState<any>(null); // ✅ กัน TS error
+  const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
 
   const statusMap: any = {
@@ -26,7 +26,6 @@ export default function TrackPage() {
       setData(null);
 
       const res = await fetch(`/api/orders/search?q=${search}`);
-
       const result = await res.json();
 
       console.log("RESULT:", result);
@@ -86,8 +85,20 @@ export default function TrackPage() {
 
             <hr className="border-zinc-700" />
 
-            <p>RAM: {data?.ram || "-"}</p>
-            <p>SSD: {data?.ssd || "-"}</p>
+            {/* 🔥 แสดง RAM / SSD */}
+            <p>RAM: {data?.ram ? `${data.ram} GB` : "-"}</p>
+            <p>SSD: {data?.ssd ? `${data.ssd} GB` : "-"}</p>
+
+            {/* 🔥 แสดงอุปกรณ์ */}
+            <p>
+              อุปกรณ์ที่นำมา:{" "}
+              {[
+                ...(data?.items || []),
+                data?.otherItem || "",
+              ]
+                .filter(Boolean)
+                .join(", ") || "-"}
+            </p>
 
           </div>
         )}
