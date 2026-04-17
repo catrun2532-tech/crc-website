@@ -19,7 +19,7 @@ function normalizeStatus(status: any) {
   return clean;
 }
 
-// ✅ schema (เพิ่ม ram / ssd ตรงนี้)
+// ✅ schema (เพิ่ม items + otherItem + ram + ssd)
 const OrderSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
@@ -28,7 +28,17 @@ const OrderSchema = new mongoose.Schema(
     details: { type: String },
     sn: { type: String },
 
-    // 🔥 เพิ่มตรงนี้
+    // 🔥 เพิ่มตรงนี้ (ตัวแก้ปัญหา)
+    items: {
+      type: [String],
+      default: [],
+    },
+
+    otherItem: {
+      type: String,
+      default: "",
+    },
+
     ram: { type: Number, default: null },
     ssd: { type: Number, default: null },
 
@@ -52,6 +62,8 @@ export async function POST(req: Request) {
 
     const body = await req.json();
 
+    console.log("🔥 BODY:", body); // debug
+
     if (!body.name || !body.phone || !body.service) {
       return NextResponse.json(
         { success: false, message: "Missing required fields" },
@@ -68,7 +80,10 @@ export async function POST(req: Request) {
       details: body.details || "",
       sn: body.sn || "",
 
-      // ✅ เพิ่มตรงนี้
+      // 🔥 ตัวสำคัญ
+      items: body.items || [],
+      otherItem: body.otherItem || "",
+
       ram: body.ram ?? null,
       ssd: body.ssd ?? null,
 
