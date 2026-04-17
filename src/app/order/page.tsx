@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import html2pdf from "html2pdf.js";
 import { FaTools, FaUser, FaSignOutAlt, FaFilePdf } from "react-icons/fa";
 
 export default function OrderPage() {
@@ -66,7 +65,7 @@ export default function OrderPage() {
       await fetch("/api/create-order", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json", // 🔥 สำคัญมาก
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(form),
       });
@@ -89,7 +88,10 @@ export default function OrderPage() {
     }
   };
 
-  const generatePDF = (o: any) => {
+  // 🔥 FIX ตรงนี้ (dynamic import)
+  const generatePDF = async (o: any) => {
+    const html2pdf = (await import("html2pdf.js")).default;
+
     const element = document.createElement("div");
 
     element.innerHTML = `
@@ -188,56 +190,3 @@ export default function OrderPage() {
     </div>
   );
 }
-
-const styles: any = {
-  page: { padding: 20, background: "#f1f5f9", minHeight: "100vh" },
-  header: { display: "flex", justifyContent: "space-between", marginBottom: 20 },
-  formCard: {
-    maxWidth: 500,
-    margin: "auto",
-    background: "#fff",
-    padding: 20,
-    borderRadius: 16,
-    boxShadow: "0 8px 20px rgba(0,0,0,0.1)",
-    display: "flex",
-    flexDirection: "column",
-  },
-  listCard: {
-    marginTop: 30,
-    background: "#fff",
-    padding: 20,
-    borderRadius: 16,
-  },
-  input: {
-    marginTop: 10,
-    padding: 10,
-    borderRadius: 8,
-    border: "1px solid #ddd",
-  },
-  saveBtn: {
-    marginTop: 15,
-    padding: 12,
-    borderRadius: 10,
-    background: "#22c55e",
-    color: "#fff",
-    border: "none",
-  },
-  item: {
-    display: "flex",
-    justifyContent: "space-between",
-    marginTop: 10,
-    borderBottom: "1px solid #eee",
-    paddingBottom: 10,
-  },
-  loginPage: {
-    height: "100vh",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  loginBox: {
-    background: "#fff",
-    padding: 30,
-    borderRadius: 16,
-  },
-};
