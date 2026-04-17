@@ -22,22 +22,8 @@ export default function OrderPage() {
   const [user, setUser] = useState("");
   const [pass, setPass] = useState("");
 
-  const [name, setName] = useState("");
-  const [phone, setPhone] = useState("");
-  const [service, setService] = useState("ลงวินโดว์");
-  const [details, setDetails] = useState("");
-  const [sn, setSn] = useState("");
-  const [status, setStatus] = useState("quote");
-
-  const [items, setItems] = useState<string[]>([]);
-  const [otherItem, setOtherItem] = useState("");
-  const [ram, setRam] = useState("");
-  const [ssd, setSsd] = useState("");
-
-  const [editingId, setEditingId] = useState<string | null>(null);
   const [orders, setOrders] = useState<Order[]>([]);
   const [search, setSearch] = useState("");
-  const [loading, setLoading] = useState(false);
 
   const loadOrders = async () => {
     const res = await fetch("/api/orders");
@@ -48,92 +34,6 @@ export default function OrderPage() {
   useEffect(() => {
     loadOrders();
   }, []);
-
-  const saveOrder = async () => {
-    if (!name || !phone) {
-      alert("กรอกชื่อ + เบอร์ก่อน");
-      return;
-    }
-
-    setLoading(true);
-
-    try {
-      const url = editingId ? `/api/orders/${editingId}` : "/api/orders";
-      const method = editingId ? "PUT" : "POST";
-
-      const finalItems = items.map((item) => {
-        item = item.trim();
-
-        if (item === "RAM" && ram) return `RAM (${ram}GB)`;
-        if (item === "SSD" && ssd) return `SSD (${ssd}GB)`;
-
-        return item;
-      });
-
-      const res = await fetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name,
-          phone,
-          service,
-          details,
-          sn,
-          status,
-          items: finalItems,
-          otherItem,
-          ram: ram ? parseInt(ram) : null,
-          ssd: ssd ? parseInt(ssd) : null,
-        }),
-      });
-
-      if (!res.ok) throw new Error();
-
-      alert(editingId ? "✅ อัปเดตแล้ว" : "✅ บันทึกสำเร็จ");
-
-      resetForm();
-      loadOrders();
-    } catch {
-      alert("❌ error");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const resetForm = () => {
-    setName("");
-    setPhone("");
-    setDetails("");
-    setSn("");
-    setStatus("quote");
-    setItems([]);
-    setOtherItem("");
-    setRam("");
-    setSsd("");
-    setEditingId(null);
-  };
-
-  const editOrder = (o: Order) => {
-    setName(o.name);
-    setPhone(o.phone);
-    setService(o.service);
-    setDetails(o.details);
-    setSn(o.sn);
-    setStatus(o.status || "quote");
-
-    setItems(
-      (o.items || []).map((i) => {
-        if (i.includes("RAM")) return "RAM";
-        if (i.includes("SSD")) return "SSD";
-        return i.trim();
-      })
-    );
-
-    setOtherItem(o.otherItem || "");
-    setRam(o.ram?.toString() || "");
-    setSsd(o.ssd?.toString() || "");
-    setEditingId(o._id || null);
-  };
 
   const renderStatus = (s: string) => {
     switch (s) {
@@ -176,7 +76,13 @@ export default function OrderPage() {
     <main className="min-h-screen bg-black text-white p-4">
       <h1 className="text-2xl mb-4">ระบบจัดการร้าน</h1>
 
-      {/* LIST */}
+      <input
+        placeholder="🔍 ค้นหา"
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        className="mb-4 p-2 w-full bg-black border"
+      />
+
       {filtered.map((o) => (
         <div key={o._id} className="bg-zinc-800 p-3 mb-3 rounded">
           <div>ชื่อ: {o.name}</div>
@@ -188,23 +94,26 @@ export default function OrderPage() {
           {o.ssd && <div>SSD: {o.ssd} GB</div>}
 
           <div className="mt-1 text-sm text-gray-300">
-            {[...(o.items || []), o.otherItem || ""].filter(Boolean).join(", ")}
+            {[...(o.items || []), o.otherItem || ""]
+              .filter(Boolean)
+              .join(", ")}
           </div>
 
           <div className="mt-3 flex gap-2">
-            <button onClick={() => editOrder(o)} className="bg-blue-500 px-3 py-1 rounded">
-              ✏️ แก้ไข
-            </button>
+            {/* 🔥 ปุ่ม PDF ใหม่ (ใช้ได้แน่นอน) */}
+            <button
+              onClick={() => {
+                if (!o._id) {
+                  alert("ไม่มี ID");
+                  return;
+                }
 
-            {/* 🔥 FIX ตรงนี้ */}
-            <a
-              href={o._id ? `/api/orders/${o._id}?pdf=true` : "#"}
-              target="_blank"
-              rel="noopener noreferrer"
+                window.open(`/api/orders/${o._id}?pdf=true`, "_blank");
+              }}
               className="bg-yellow-500 px-3 py-1 rounded text-black"
             >
               📄 PDF
-            </a>
+            </button>
           </div>
         </div>
       ))}
