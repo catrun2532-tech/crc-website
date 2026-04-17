@@ -121,7 +121,6 @@ export default function OrderPage() {
     setSn(o.sn);
     setStatus(o.status || "quote");
 
-    // 🔥 FIX สำคัญ
     setItems(
       (o.items || []).map((i) => {
         if (i.includes("RAM")) return "RAM";
@@ -177,78 +176,7 @@ export default function OrderPage() {
     <main className="min-h-screen bg-black text-white p-4">
       <h1 className="text-2xl mb-4">ระบบจัดการร้าน</h1>
 
-      <div className="bg-zinc-900 p-4 rounded mb-6">
-        <input placeholder="ชื่อ" value={name} className="block mb-2 p-2 w-full bg-black" onChange={(e) => setName(e.target.value)} />
-        <input placeholder="เบอร์" value={phone} className="block mb-2 p-2 w-full bg-black" onChange={(e) => setPhone(e.target.value)} />
-        <input placeholder="SN" value={sn} className="block mb-2 p-2 w-full bg-black" onChange={(e) => setSn(e.target.value)} />
-
-        <select value={service} className="block mb-2 p-2 w-full bg-black" onChange={(e) => setService(e.target.value)}>
-          <option>ลงวินโดว์</option>
-          <option>กู้ข้อมูล</option>
-          <option>อื่นๆ</option>
-        </select>
-
-        <select value={status} className="block mb-2 p-2 w-full bg-black" onChange={(e) => setStatus(e.target.value)}>
-          <option value="quote">เสนอราคา</option>
-          <option value="repairing">กำลังซ่อม</option>
-          <option value="waiting_parts">รออะไหล่</option>
-          <option value="done">ซ่อมเสร็จ</option>
-        </select>
-
-        <textarea placeholder="รายละเอียด" value={details} className="block mb-2 p-2 w-full bg-black" onChange={(e) => setDetails(e.target.value)} />
-
-        <div className="mb-2">
-          <label className="block">สิ่งที่นำมาด้วย:</label>
-
-          {["กระเป๋า", "สายชาร์จ", "RAM", "SSD", "อื่นๆ"].map((item) => (
-            <label key={item} className="block">
-              <input
-                type="checkbox"
-                checked={items.some(i => i.includes(item))}
-                onChange={(e) =>
-                  e.target.checked
-                    ? setItems([...items, item])
-                    : setItems(items.filter(i => !i.includes(item)))
-                }
-              /> {item}
-            </label>
-          ))}
-
-          {items.includes("RAM") && (
-            <input
-              className="p-1 mt-1 bg-black border"
-              placeholder="RAM เช่น 16"
-              value={ram}
-              onChange={(e) => setRam(e.target.value.replace(/[^0-9]/g, ""))}
-            />
-          )}
-
-          {items.includes("SSD") && (
-            <input
-              className="p-1 mt-1 bg-black border"
-              placeholder="SSD เช่น 512"
-              value={ssd}
-              onChange={(e) => setSsd(e.target.value.replace(/[^0-9]/g, ""))}
-            />
-          )}
-
-          {items.includes("อื่นๆ") && (
-            <input className="mt-2 p-2 w-full bg-black" placeholder="อื่นๆ" value={otherItem} onChange={(e) => setOtherItem(e.target.value)} />
-          )}
-        </div>
-
-        <button onClick={saveOrder} className="bg-green-600 px-4 py-2">
-          {editingId ? "💾 อัปเดต" : "💾 บันทึก"}
-        </button>
-      </div>
-
-      <input
-        placeholder="🔍 ค้นหา"
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        className="mb-4 p-2 w-full bg-black border"
-      />
-
+      {/* LIST */}
       {filtered.map((o) => (
         <div key={o._id} className="bg-zinc-800 p-3 mb-3 rounded">
           <div>ชื่อ: {o.name}</div>
@@ -268,9 +196,11 @@ export default function OrderPage() {
               ✏️ แก้ไข
             </button>
 
+            {/* 🔥 FIX ตรงนี้ */}
             <a
-              href={`/api/orders/pdf/${o._id}`}
+              href={o._id ? `/api/orders/${o._id}?pdf=true` : "#"}
               target="_blank"
+              rel="noopener noreferrer"
               className="bg-yellow-500 px-3 py-1 rounded text-black"
             >
               📄 PDF
