@@ -19,7 +19,7 @@ function normalizeStatus(status: any) {
   return clean;
 }
 
-// schema
+// ✅ schema (เพิ่ม ram / ssd ตรงนี้)
 const OrderSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
@@ -28,10 +28,14 @@ const OrderSchema = new mongoose.Schema(
     details: { type: String },
     sn: { type: String },
 
+    // 🔥 เพิ่มตรงนี้
+    ram: { type: Number, default: null },
+    ssd: { type: Number, default: null },
+
     status: {
       type: String,
-      enum: ["quote", "repairing", "waiting_parts", "done"], // ✅ แก้ตรงนี้
-      default: "quote", // ✅ แก้ตรงนี้
+      enum: ["quote", "repairing", "waiting_parts", "done"],
+      default: "quote",
     },
   },
   { timestamps: true }
@@ -63,6 +67,11 @@ export async function POST(req: Request) {
       service: body.service,
       details: body.details || "",
       sn: body.sn || "",
+
+      // ✅ เพิ่มตรงนี้
+      ram: body.ram ?? null,
+      ssd: body.ssd ?? null,
+
       status,
     });
 
