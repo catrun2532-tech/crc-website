@@ -13,6 +13,8 @@ type Order = {
   status: string;
   items?: string[];
   otherItem?: string;
+  ram?: number;
+  ssd?: number;
 };
 
 export default function OrderPage() {
@@ -60,8 +62,8 @@ export default function OrderPage() {
       const method = editingId ? "PUT" : "POST";
 
       const finalItems = items.map((item) => {
-        if (item === "RAM" && ram) return `RAM (${ram})`;
-        if (item === "SSD" && ssd) return `SSD (${ssd})`;
+        if (item === "RAM" && ram) return `RAM (${ram}GB)`;
+        if (item === "SSD" && ssd) return `SSD (${ssd}GB)`;
         return item;
       });
 
@@ -77,6 +79,10 @@ export default function OrderPage() {
           status,
           items: finalItems,
           otherItem,
+
+          // 🔥 ส่งเข้า DB จริง
+          ram: ram ? parseInt(ram) : null,
+          ssd: ssd ? parseInt(ssd) : null,
         }),
       });
 
@@ -115,6 +121,8 @@ export default function OrderPage() {
     setStatus(o.status || "quote");
     setItems(o.items || []);
     setOtherItem(o.otherItem || "");
+    setRam(o.ram?.toString() || "");
+    setSsd(o.ssd?.toString() || "");
     setEditingId(o._id || null);
   };
 
@@ -159,7 +167,7 @@ export default function OrderPage() {
     <main className="min-h-screen bg-black text-white p-4">
       <h1 className="text-2xl mb-4">ระบบจัดการร้าน</h1>
 
-      {/* 🔥 FORM */}
+      {/* FORM */}
       <div className="bg-zinc-900 p-4 rounded mb-6">
         <input placeholder="ชื่อ" value={name} className="block mb-2 p-2 w-full bg-black" onChange={(e) => setName(e.target.value)} />
         <input placeholder="เบอร์" value={phone} className="block mb-2 p-2 w-full bg-black" onChange={(e) => setPhone(e.target.value)} />
@@ -180,7 +188,7 @@ export default function OrderPage() {
 
         <textarea placeholder="รายละเอียด" value={details} className="block mb-2 p-2 w-full bg-black" onChange={(e) => setDetails(e.target.value)} />
 
-        {/* 🔥 ITEMS */}
+        {/* ITEMS */}
         <div className="mb-2">
           <label className="block">สิ่งที่นำมาด้วย:</label>
 
@@ -199,11 +207,21 @@ export default function OrderPage() {
           ))}
 
           {items.includes("RAM") && (
-            <input className="p-1 mt-1 bg-black border" placeholder="RAM เช่น 16GB" value={ram} onChange={(e) => setRam(e.target.value)} />
+            <input
+              className="p-1 mt-1 bg-black border"
+              placeholder="RAM เช่น 16"
+              value={ram}
+              onChange={(e) => setRam(e.target.value.replace(/[^0-9]/g, ""))}
+            />
           )}
 
           {items.includes("SSD") && (
-            <input className="p-1 mt-1 bg-black border" placeholder="SSD เช่น 512GB" value={ssd} onChange={(e) => setSsd(e.target.value)} />
+            <input
+              className="p-1 mt-1 bg-black border"
+              placeholder="SSD เช่น 512"
+              value={ssd}
+              onChange={(e) => setSsd(e.target.value.replace(/[^0-9]/g, ""))}
+            />
           )}
 
           {items.includes("อื่นๆ") && (
@@ -216,7 +234,7 @@ export default function OrderPage() {
         </button>
       </div>
 
-      {/* 🔍 SEARCH */}
+      {/* SEARCH */}
       <input
         placeholder="🔍 ค้นหา"
         value={search}
@@ -224,7 +242,7 @@ export default function OrderPage() {
         className="mb-4 p-2 w-full bg-black border"
       />
 
-      {/* 📦 LIST */}
+      {/* LIST */}
       {filtered.map((o) => (
         <div key={o._id} className="bg-zinc-800 p-3 mb-3 rounded">
           <div>ชื่อ: {o.name}</div>
@@ -232,11 +250,14 @@ export default function OrderPage() {
           <div>SN: {o.sn}</div>
           <div>สถานะ: {renderStatus(o.status)}</div>
 
+          {/* 🔥 แสดง RAM / SSD */}
+          {o.ram && <div>RAM: {o.ram} GB</div>}
+          {o.ssd && <div>SSD: {o.ssd} GB</div>}
+
           <div className="mt-1 text-sm text-gray-300">
             {[...(o.items || []), o.otherItem || ""].filter(Boolean).join(", ")}
           </div>
 
-          {/* 🔥 ปุ่ม */}
           <div className="mt-3 flex gap-2">
             <button
               onClick={() => editOrder(o)}
