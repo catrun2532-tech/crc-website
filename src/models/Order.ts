@@ -23,7 +23,19 @@ const OrderSchema = new mongoose.Schema(
       type: String,
     },
 
-    // ✅ เพิ่ม RAM / SSD
+    // 🔥 เพิ่ม items (สำคัญมาก)
+    items: {
+      type: [String],
+      default: [],
+    },
+
+    // 🔥 เพิ่ม otherItem
+    otherItem: {
+      type: String,
+      default: "",
+    },
+
+    // 🔥 RAM / SSD
     ram: {
       type: Number,
       default: null,
