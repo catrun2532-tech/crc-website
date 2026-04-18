@@ -1,8 +1,8 @@
 export async function GET(
   req: Request,
-  context: { params: { id: string } }
+  context: any
 ) {
   const { id } = context.params
 
-  // ใช้ id ต่อ
+  // ใช้ id ต่อได้เลย
 }
