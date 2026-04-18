@@ -7,7 +7,6 @@ function normalizeStatus(status: any) {
   if (!status) return "quote";
 
   const clean = String(status).trim().toLowerCase();
-
   const allowed = ["quote", "repairing", "waiting_parts", "done"];
 
   if (!allowed.includes(clean)) {
@@ -17,19 +16,19 @@ function normalizeStatus(status: any) {
   return clean;
 }
 
-// 🔥 helper กัน items เพี้ยน
+// helper items
 function normalizeItems(items: any): string[] {
   if (!Array.isArray(items)) return [];
   return items.map((i) => String(i).trim()).filter(Boolean);
 }
 
-// ✅ GET by id + รองรับ PDF
+// ✅ GET
 export async function GET(
   req: Request,
-  context: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = await context.params;
+    const { id } = params;
 
     await connectDB();
 
@@ -95,8 +94,7 @@ export async function GET(
 
     return NextResponse.json(order);
   } catch (error: any) {
-    console.error("GET ERROR:", error.message);
-
+    console.error("GET ERROR:", error);
     return NextResponse.json(
       { error: error.message || "Server error" },
       { status: 500 }
@@ -104,18 +102,17 @@ export async function GET(
   }
 }
 
-// ✅ PUT update
+// ✅ PUT
 export async function PUT(
   req: Request,
-  context: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = await context.params;
+    const { id } = params;
 
     await connectDB();
 
     const body = await req.json();
-
     const status = normalizeStatus(body.status);
 
     const updated = await Order.findByIdAndUpdate(
@@ -123,8 +120,6 @@ export async function PUT(
       {
         ...body,
         status,
-
-        // 🔥 clean data ก่อน save
         items: normalizeItems(body.items),
         otherItem: (body.otherItem || "").trim(),
         ram: body.ram ? Number(body.ram) : null,
@@ -135,8 +130,7 @@ export async function PUT(
 
     return NextResponse.json(updated);
   } catch (error: any) {
-    console.error("PUT ERROR:", error.message);
-
+    console.error("PUT ERROR:", error);
     return NextResponse.json(
       { error: error.message || "Server error" },
       { status: 500 }
@@ -147,10 +141,10 @@ export async function PUT(
 // ✅ DELETE
 export async function DELETE(
   req: Request,
-  context: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = await context.params;
+    const { id } = params;
 
     await connectDB();
 
@@ -158,8 +152,7 @@ export async function DELETE(
 
     return NextResponse.json({ message: "Deleted" });
   } catch (error: any) {
-    console.error("DELETE ERROR:", error.message);
-
+    console.error("DELETE ERROR:", error);
     return NextResponse.json(
       { error: error.message || "Server error" },
       { status: 500 }
