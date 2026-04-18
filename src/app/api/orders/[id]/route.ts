@@ -5,10 +5,7 @@ import { ObjectId } from "mongodb"
 //
 // ✅ GET
 //
-export async function GET(
-  req: Request,
-  context: { params: { id: string } }
-) {
+export async function GET(req: Request, context: any) {
   try {
     const client = await clientPromise
     const db = client.db()
@@ -39,10 +36,7 @@ export async function GET(
 //
 // ✅ PUT
 //
-export async function PUT(
-  req: Request,
-  context: { params: { id: string } }
-) {
+export async function PUT(req: Request, context: any) {
   try {
     const client = await clientPromise
     const db = client.db()
@@ -76,10 +70,7 @@ export async function PUT(
 //
 // ✅ DELETE
 //
-export async function DELETE(
-  req: Request,
-  context: { params: { id: string } }
-) {
+export async function DELETE(req: Request, context: any) {
   try {
     const client = await clientPromise
     const db = client.db()
