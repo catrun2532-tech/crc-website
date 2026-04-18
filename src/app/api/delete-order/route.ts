@@ -1,20 +1,11 @@
-import { MongoClient } from "mongodb";
+import { NextResponse } from "next/server";
+import clientPromise from "@/lib/mongodb";
 
-const uri = "mongodb://127.0.0.1:27017";
-const options = {};
+export async function DELETE(req: Request) {
+  const client = await clientPromise;
+  const db = client.db("your-db-name");
 
-let client: MongoClient;
-let clientPromise: Promise<MongoClient>;
+  // ทำ logic ลบ
 
-declare global {
-  var _mongoClientPromise: Promise<MongoClient> | undefined;
+  return NextResponse.json({ success: true });
 }
-
-if (!global._mongoClientPromise) {
-  client = new MongoClient(uri, options);
-  global._mongoClientPromise = client.connect();
-}
-
-clientPromise = global._mongoClientPromise;
-
-export default clientPromise;
