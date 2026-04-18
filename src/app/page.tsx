@@ -1,4 +1,7 @@
+<<<<<<< HEAD
 // src/app/page.tsx
+=======
+>>>>>>> fix-work
 import Link from "next/link";
 import Image from "next/image";
 
@@ -91,6 +94,7 @@ export default function Page() {
               โทร: 0960956981
             </a>
             {/* เว็บไซต์ภายนอกใช้ a ได้ */}
+<<<<<<< HEAD
             <a
               href={BRAND.website}
               className="px-5 py-3 rounded-2xl bg-zinc-800 hover:bg-zinc-700 transition"
@@ -99,6 +103,14 @@ export default function Page() {
             >
               {BRAND.website.replace("https://", "")}
             </a>
+=======
+           <Link
+  href="/track"
+  className="px-5 py-3 rounded-2xl bg-gradient-to-r from-yellow-400 to-red-500 text-black font-semibold"
+>
+  🔍 เช็คใบงาน (ลูกค้า)
+</Link>
+>>>>>>> fix-work
           </div>
         </div>
       </section>
