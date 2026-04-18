@@ -22,11 +22,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
-<<<<<<< HEAD
     "@tailwindcss/postcss": "^4.2.2",
-=======
-    "@tailwindcss/postcss": "^4",
->>>>>>> 9f7b3a7f83db3d883354e6e781fece620c535d06
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
