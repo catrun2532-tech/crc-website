@@ -1,4 +1,4 @@
-import PDFDocument from "pdfkit";
+import { NextResponse } from "next/server";
 
 export async function GET(
   req: Request,
@@ -6,26 +6,13 @@ export async function GET(
 ) {
   const { id } = params;
 
-  const doc = new PDFDocument();
-  const chunks: Uint8Array[] = [];
+  // 🔥 mock data (เดี๋ยวคุณค่อยเอาจาก DB จริง)
+  const content = `Order ID: ${id}`;
 
-  doc.on("data", (chunk) => chunks.push(chunk));
-  doc.on("end", () => {});
+  // 👉 สร้าง PDF แบบง่าย (text)
+  const pdfBuffer = Buffer.from(content);
 
-  // 👉 เนื้อหา PDF
-  doc.fontSize(20).text(`Order ID: ${id}`);
-  doc.text("ระบบซ่อมคอม");
-  doc.text("ขอบคุณที่ใช้บริการ");
-
-  doc.end();
-
-  const pdfBuffer = await new Promise<Buffer>((resolve) => {
-    doc.on("end", () => {
-      resolve(Buffer.concat(chunks));
-    });
-  });
-
-  return new Response(pdfBuffer, {
+  return new NextResponse(pdfBuffer, {
     headers: {
       "Content-Type": "application/pdf",
       "Content-Disposition": `attachment; filename=order-${id}.pdf`,
