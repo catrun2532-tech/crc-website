@@ -1,15 +1,20 @@
-import clientPromise from "@/lib/mongodb";
-import { ObjectId } from "mongodb";
+import { MongoClient } from "mongodb";
 
-export async function DELETE(req: Request) {
-  const { id } = await req.json();
+const uri = "mongodb://127.0.0.1:27017";
+const options = {};
 
-  const client = await clientPromise;
-  const db = client.db("your-db-name");
+let client: MongoClient;
+let clientPromise: Promise<MongoClient>;
 
-  await db.collection("orders").deleteOne({
-    _id: new ObjectId(id),
-  });
-
-  return new Response(JSON.stringify({ success: true }));
+declare global {
+  var _mongoClientPromise: Promise<MongoClient> | undefined;
 }
+
+if (!global._mongoClientPromise) {
+  client = new MongoClient(uri, options);
+  global._mongoClientPromise = client.connect();
+}
+
+clientPromise = global._mongoClientPromise;
+
+export default clientPromise;
