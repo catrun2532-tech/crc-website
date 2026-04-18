@@ -1,36 +1,35 @@
 import mongoose from "mongoose";
 
-const MONGODB_URI = process.env.MONGODB_URI as string;
+const MONGODB_URI = process.env.MONGODB_URI;
 
 if (!MONGODB_URI) {
   throw new Error("❌ Please define MONGODB_URI in .env or Vercel");
 }
 
-// 👇 type สำหรับ cache (กัน TS error)
-interface MongooseCache {
+// type สำหรับ cache
+interface Cached {
   conn: typeof mongoose | null;
   promise: Promise<typeof mongoose> | null;
 }
 
-// 👇 ใช้ globalThis แบบปลอดภัย
-let cached = (globalThis as any)._mongoose as MongooseCache;
-
-if (!cached) {
-  cached = (globalThis as any)._mongoose = {
-    conn: null,
-    promise: null,
-  };
+// ใช้ globalThis แบบ safe + TS
+declare global {
+  // eslint-disable-next-line no-var
+  var mongooseCache: Cached | undefined;
 }
 
+const cached: Cached = global.mongooseCache || {
+  conn: null,
+  promise: null,
+};
+
 async function connectDB() {
-  // ถ้ามี connection แล้ว → ใช้เลย
   if (cached.conn) {
     return cached.conn;
   }
 
-  // ถ้ายังไม่มี → สร้าง promise ใหม่
   if (!cached.promise) {
-    cached.promise = mongoose.connect(MONGODB_URI, {
+    cached.promise = mongoose.connect(MONGODB_URI!, {
       bufferCommands: false,
     });
   }
@@ -39,10 +38,12 @@ async function connectDB() {
     cached.conn = await cached.promise;
     console.log("✅ MongoDB connected");
   } catch (error) {
-    console.error("❌ MongoDB error:", error);
     cached.promise = null;
+    console.error("❌ MongoDB error:", error);
     throw error;
   }
+
+  global.mongooseCache = cached;
 
   return cached.conn;
 }
