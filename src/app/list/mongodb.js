@@ -1,0 +1,19 @@
+import { MongoClient } from "mongodb";
+
+const uri = "mongodb://127.0.0.1:27017"; // หรือของคุณ
+const options = {};
+
+let client;
+let clientPromise;
+
+if (!global._mongoClientPromise) {
+  client = new MongoClient(uri, options);
+  global._mongoClientPromise = client.connect();
+}
+
+clientPromise = global._mongoClientPromise;
+
+export async function getDb() {
+  const client = await clientPromise;
+  return client.db("crc"); // 👉 ชื่อ database
+}

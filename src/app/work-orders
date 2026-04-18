@@ -1,0 +1,158 @@
+"use client";
+
+import { useEffect, useState } from "react";
+
+type WorkOrder = {
+  id: string;
+  customer: string;
+  phone: string;
+  device: string;
+  problem: string;
+  price: number;
+  date: string;
+};
+
+const STORAGE_KEY = "work_orders";
+
+function loadOrders(): WorkOrder[] {
+  if (typeof window === "undefined") return [];
+  try {
+    return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+  } catch {
+    return [];
+  }
+}
+
+function saveOrders(data: WorkOrder[]) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+
+export default function WorkOrdersPage() {
+  const [orders, setOrders] = useState<WorkOrder[]>([]);
+  const [form, setForm] = useState({
+    customer: "",
+    phone: "",
+    device: "",
+    problem: "",
+    price: "",
+  });
+
+  useEffect(() => {
+    setOrders(loadOrders());
+  }, []);
+
+  function addOrder() {
+    if (!form.customer) return alert("กรุณากรอกชื่อลูกค้า");
+
+    const newOrder: WorkOrder = {
+      id: Date.now().toString(),
+      customer: form.customer,
+      phone: form.phone,
+      device: form.device,
+      problem: form.problem,
+      price: Number(form.price || 0),
+      date: new Date().toLocaleString(),
+    };
+
+    const updated = [newOrder, ...orders];
+    setOrders(updated);
+    saveOrders(updated);
+
+    setForm({
+      customer: "",
+      phone: "",
+      device: "",
+      problem: "",
+      price: "",
+    });
+  }
+
+  function printOrder(order: WorkOrder) {
+    const content = `
+      <h2>ใบรับงานซ่อม</h2>
+      <p>วันที่: ${order.date}</p>
+      <p>ลูกค้า: ${order.customer}</p>
+      <p>โทร: ${order.phone}</p>
+      <p>อุปกรณ์: ${order.device}</p>
+      <p>อาการ: ${order.problem}</p>
+      <p>ราคา: ${order.price} บาท</p>
+      <hr/>
+      <p>บริษัท แคทรันซีพียู</p>
+    `;
+
+    const win = window.open("", "", "width=400,height=600");
+    if (win) {
+      win.document.write(content);
+      win.document.close();
+      win.print();
+    }
+  }
+
+  return (
+    <main className="min-h-screen bg-black text-white p-4">
+      <h1 className="text-3xl font-bold mb-6">📄 ใบงาน / รับซ่อม</h1>
+
+      {/* ฟอร์ม */}
+      <div className="bg-zinc-900 p-4 rounded-xl space-y-3">
+        <input
+          placeholder="ชื่อลูกค้า"
+          value={form.customer}
+          onChange={(e) => setForm({ ...form, customer: e.target.value })}
+          className="w-full p-2 rounded bg-zinc-800"
+        />
+        <input
+          placeholder="เบอร์โทร"
+          value={form.phone}
+          onChange={(e) => setForm({ ...form, phone: e.target.value })}
+          className="w-full p-2 rounded bg-zinc-800"
+        />
+        <input
+          placeholder="อุปกรณ์"
+          value={form.device}
+          onChange={(e) => setForm({ ...form, device: e.target.value })}
+          className="w-full p-2 rounded bg-zinc-800"
+        />
+        <textarea
+          placeholder="อาการเสีย"
+          value={form.problem}
+          onChange={(e) => setForm({ ...form, problem: e.target.value })}
+          className="w-full p-2 rounded bg-zinc-800"
+        />
+        <input
+          placeholder="ราคา"
+          value={form.price}
+          onChange={(e) => setForm({ ...form, price: e.target.value })}
+          className="w-full p-2 rounded bg-zinc-800"
+        />
+
+        <button
+          onClick={addOrder}
+          className="w-full bg-green-600 py-2 rounded-xl"
+        >
+          ➕ บันทึกใบงาน
+        </button>
+      </div>
+
+      {/* รายการ */}
+      <div className="mt-8 space-y-4">
+        {orders.map((o) => (
+          <div key={o.id} className="bg-zinc-900 p-4 rounded-xl">
+            <div>👤 {o.customer}</div>
+            <div>📱 {o.phone}</div>
+            <div>💻 {o.device}</div>
+            <div>🔧 {o.problem}</div>
+            <div>💰 {o.price} บาท</div>
+            <div className="text-sm text-gray-400">{o.date}</div>
+
+            <button
+              onClick={() => printOrder(o)}
+              className="mt-3 bg-blue-600 px-4 py-2 rounded-xl"
+            >
+              🖨 พิมพ์ใบงาน
+            </button>
+          </div>
+        ))}
+      </div>
+    </main>
+  );
+}

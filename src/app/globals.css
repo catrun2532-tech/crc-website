@@ -1,0 +1,41 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ===== เพิ่มฟอนต์ไทย ===== */
+@font-face {
+  font-family: 'THSarabunNew';
+  src: url('/fonts/THSarabunNew.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ===== ตัวแปรสี ===== */
+:root {
+  --background: #f8fafc;
+  --foreground: #171717;
+}
+
+/* ===== dark mode ===== */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+/* ===== ใช้ฟอนต์ไทยทั้งเว็บ ===== */
+html, body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: 'THSarabunNew', Arial, Helvetica, sans-serif;
+  font-size: 18px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ===== ป้องกัน PDF เพี้ยน ===== */
+* {
+  font-family: 'THSarabunNew', Arial, Helvetica, sans-serif !important;
+}
