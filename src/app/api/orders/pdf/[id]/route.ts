@@ -1,9 +1,9 @@
 import PDFDocument from "pdfkit"
 import { NextResponse } from "next/server"
-import connectDB from "@/lib/connectDB";
-import Order from "@/models/Order";
+import connectDB from "@/lib/connectDB"
+import Order from "@/models/Order"
 
-export const runtime = "nodejs" // สำคัญมาก (ใช้ buffer / pdfkit)
+export const runtime = "nodejs" // ต้องมี (ใช้ Buffer)
 
 export async function GET(
   req: Request,
@@ -12,7 +12,7 @@ export async function GET(
   try {
     await connectDB()
 
-    const order = await Order.findById(params.id).lean()
+    const order = await Order.findById(params.id).lean() as any
 
     if (!order) {
       return NextResponse.json({ error: "Not found" }, { status: 404 })
@@ -20,22 +20,22 @@ export async function GET(
 
     const doc = new PDFDocument()
 
-    const chunks: Uint8Array[] = []
+    const chunks: Buffer[] = []
 
-    doc.on("data", (chunk) => chunks.push(chunk))
+    doc.on("data", (chunk: Buffer) => chunks.push(chunk))
 
-    // ====== เนื้อหา PDF ======
+    // ===== PDF CONTENT =====
     doc.fontSize(18).text("Order Detail", { align: "center" })
     doc.moveDown()
 
-    doc.fontSize(14).text(`ลูกค้า: ${order.name ?? "-"}`)
-    doc.text(`เบอร์: ${order.phone ?? "-"}`)
-    doc.text(`RAM: ${order.ram ?? "-"}`)
-    doc.text(`SSD: ${order.ssd ?? "-"}`)
+    doc.fontSize(14).text(`ลูกค้า: ${order.name || "-"}`)
+    doc.text(`เบอร์: ${order.phone || "-"}`)
+    doc.text(`RAM: ${order.ram || "-"}`)
+    doc.text(`SSD: ${order.ssd || "-"}`)
 
     doc.end()
 
-    const pdfBuffer: Buffer = await new Promise((resolve, reject) => {
+    const pdfBuffer = await new Promise<Buffer>((resolve, reject) => {
       doc.on("end", () => resolve(Buffer.concat(chunks)))
       doc.on("error", reject)
     })
@@ -50,7 +50,7 @@ export async function GET(
     console.error("PDF ERROR:", error)
 
     return NextResponse.json(
-      { error: error.message || "Server error" },
+      { error: error?.message || "Server error" },
       { status: 500 }
     )
   }
