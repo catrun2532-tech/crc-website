@@ -1,20 +1,20 @@
-import { MongoClient } from "mongodb";
+import { MongoClient } from "mongodb"
 
-const uri = "mongodb://127.0.0.1:27017";
-const options = {};
-
-let client: MongoClient;
-let clientPromise: Promise<MongoClient>;
+const uri = process.env.MONGODB_URI!
+const options = {}
 
 declare global {
-  var _mongoClientPromise: Promise<MongoClient> | undefined;
+  var _mongoClientPromise: Promise<MongoClient>
 }
+
+let client: MongoClient
+let clientPromise: Promise<MongoClient>
 
 if (!global._mongoClientPromise) {
-  client = new MongoClient(uri, options);
-  global._mongoClientPromise = client.connect();
+  client = new MongoClient(uri, options)
+  global._mongoClientPromise = client.connect()
 }
 
-clientPromise = global._mongoClientPromise;
+clientPromise = global._mongoClientPromise
 
-export default clientPromise;
+export default clientPromise
