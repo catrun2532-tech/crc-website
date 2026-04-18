@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import connectDB from "@/lib/mongodb";
+import { connectDB } from "@/lib/mongodb"; // ✅ แก้ตรงนี้
 import Order from "@/models/Order";
 
 export async function GET(req: Request) {
@@ -25,7 +25,6 @@ export async function GET(req: Request) {
       return NextResponse.json(null);
     }
 
-    // 🔍 DEBUG ดูค่าจริงใน server
     console.log("ORDER FOUND:", order);
 
     return NextResponse.json({
@@ -38,7 +37,6 @@ export async function GET(req: Request) {
       service: order.service ?? "",
       details: order.details ?? "",
 
-      // ✅ ใช้ ?? แทน || (กันค่า 0 หาย)
       ram: order.ram ?? null,
       ssd: order.ssd ?? null,
 

@@ -1,9 +1,9 @@
 import PDFDocument from "pdfkit"
 import { NextResponse } from "next/server"
-import connectDB from "@/lib/connectDB"
+import { connectDB } from "@/lib/mongodb" // ✅ แก้ตรงนี้
 import Order from "@/models/Order"
 
-export const runtime = "nodejs" // ต้องมี (ใช้ Buffer)
+export const runtime = "nodejs"
 
 export async function GET(
   req: Request,
@@ -40,7 +40,8 @@ export async function GET(
       doc.on("error", reject)
     })
 
-    return new Response(pdfBuffer, {
+    // ✅ แก้ตรงนี้ (สำคัญ)
+    return new Response(new Uint8Array(pdfBuffer), {
       headers: {
         "Content-Type": "application/pdf",
         "Content-Disposition": `attachment; filename=order-${params.id}.pdf`,
