@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongodb";
-import Order from "@/models/Order"; // 👈 ต้องเป็น O ใหญ่
+import Order from "@/models/Order";
 
 // helper
 function normalizeStatus(status: any) {
@@ -23,12 +23,9 @@ function normalizeItems(items: any): string[] {
 }
 
 // ✅ GET
-export async function GET(
-  req: Request,
-  { params }: { params: { id: string } }
-) {
+export async function GET(req: Request, context: any) {
   try {
-    const { id } = params;
+    const { id } = context.params;
 
     await connectDB();
 
@@ -103,12 +100,9 @@ export async function GET(
 }
 
 // ✅ PUT
-export async function PUT(
-  req: Request,
-  { params }: { params: { id: string } }
-) {
+export async function PUT(req: Request, context: any) {
   try {
-    const { id } = params;
+    const { id } = context.params;
 
     await connectDB();
 
@@ -139,12 +133,9 @@ export async function PUT(
 }
 
 // ✅ DELETE
-export async function DELETE(
-  req: Request,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(req: Request, context: any) {
   try {
-    const { id } = params;
+    const { id } = context.params;
 
     await connectDB();
 
