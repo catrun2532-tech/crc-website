@@ -62,8 +62,11 @@ export default function OrderPage() {
       const method = editingId ? "PUT" : "POST";
 
       const finalItems = items.map((item) => {
+        item = item.trim();
+
         if (item === "RAM" && ram) return `RAM (${ram}GB)`;
         if (item === "SSD" && ssd) return `SSD (${ssd}GB)`;
+
         return item;
       });
 
@@ -118,11 +121,12 @@ export default function OrderPage() {
     setSn(o.sn);
     setStatus(o.status || "quote");
 
+    // 🔥 FIX สำคัญ
     setItems(
       (o.items || []).map((i) => {
         if (i.includes("RAM")) return "RAM";
         if (i.includes("SSD")) return "SSD";
-        return i;
+        return i.trim();
       })
     );
 
@@ -178,7 +182,60 @@ export default function OrderPage() {
         <input placeholder="เบอร์" value={phone} className="block mb-2 p-2 w-full bg-black" onChange={(e) => setPhone(e.target.value)} />
         <input placeholder="SN" value={sn} className="block mb-2 p-2 w-full bg-black" onChange={(e) => setSn(e.target.value)} />
 
+        <select value={service} className="block mb-2 p-2 w-full bg-black" onChange={(e) => setService(e.target.value)}>
+          <option>ลงวินโดว์</option>
+          <option>กู้ข้อมูล</option>
+          <option>อื่นๆ</option>
+        </select>
+
+        <select value={status} className="block mb-2 p-2 w-full bg-black" onChange={(e) => setStatus(e.target.value)}>
+          <option value="quote">เสนอราคา</option>
+          <option value="repairing">กำลังซ่อม</option>
+          <option value="waiting_parts">รออะไหล่</option>
+          <option value="done">ซ่อมเสร็จ</option>
+        </select>
+
         <textarea placeholder="รายละเอียด" value={details} className="block mb-2 p-2 w-full bg-black" onChange={(e) => setDetails(e.target.value)} />
+
+        <div className="mb-2">
+          <label className="block">สิ่งที่นำมาด้วย:</label>
+
+          {["กระเป๋า", "สายชาร์จ", "RAM", "SSD", "อื่นๆ"].map((item) => (
+            <label key={item} className="block">
+              <input
+                type="checkbox"
+                checked={items.some(i => i.includes(item))}
+                onChange={(e) =>
+                  e.target.checked
+                    ? setItems([...items, item])
+                    : setItems(items.filter(i => !i.includes(item)))
+                }
+              /> {item}
+            </label>
+          ))}
+
+          {items.includes("RAM") && (
+            <input
+              className="p-1 mt-1 bg-black border"
+              placeholder="RAM เช่น 16"
+              value={ram}
+              onChange={(e) => setRam(e.target.value.replace(/[^0-9]/g, ""))}
+            />
+          )}
+
+          {items.includes("SSD") && (
+            <input
+              className="p-1 mt-1 bg-black border"
+              placeholder="SSD เช่น 512"
+              value={ssd}
+              onChange={(e) => setSsd(e.target.value.replace(/[^0-9]/g, ""))}
+            />
+          )}
+
+          {items.includes("อื่นๆ") && (
+            <input className="mt-2 p-2 w-full bg-black" placeholder="อื่นๆ" value={otherItem} onChange={(e) => setOtherItem(e.target.value)} />
+          )}
+        </div>
 
         <button onClick={saveOrder} className="bg-green-600 px-4 py-2">
           {editingId ? "💾 อัปเดต" : "💾 บันทึก"}
@@ -199,13 +256,20 @@ export default function OrderPage() {
           <div>SN: {o.sn}</div>
           <div>สถานะ: {renderStatus(o.status)}</div>
 
+          {o.ram && <div>RAM: {o.ram} GB</div>}
+          {o.ssd && <div>SSD: {o.ssd} GB</div>}
+
+          <div className="mt-1 text-sm text-gray-300">
+            {[...(o.items || []), o.otherItem || ""].filter(Boolean).join(", ")}
+          </div>
+
           <div className="mt-3 flex gap-2">
             <button onClick={() => editOrder(o)} className="bg-blue-500 px-3 py-1 rounded">
               ✏️ แก้ไข
             </button>
 
             <a
-              href={`/api/orders/pdf/${o._id?.toString()}`}
+              href={`/api/orders/pdf/${o._id}`}
               target="_blank"
               className="bg-yellow-500 px-3 py-1 rounded text-black"
             >
