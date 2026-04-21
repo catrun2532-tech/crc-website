@@ -27,9 +27,7 @@ export async function GET(
   context: { params: { id: string } }
 ) {
   try {
-    const { id } = context.params; // ✅ แก้แล้ว (ไม่ await)
-
-    console.log("GET ID:", id);
+    const { id } = context.params;
 
     await connectDB();
 
@@ -42,7 +40,6 @@ export async function GET(
     const { searchParams } = new URL(req.url);
     const isPDF = searchParams.get("pdf");
 
-    // ✅ โหมด PDF
     if (isPDF) {
       const itemsText = [
         ...(order.items || []),
@@ -116,6 +113,7 @@ export async function PUT(
     await connectDB();
 
     const body = await req.json();
+
     const status = normalizeStatus(body.status);
 
     const updated = await Order.findByIdAndUpdate(
