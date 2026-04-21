@@ -24,10 +24,10 @@ function normalizeItems(items: any): string[] {
 // ✅ GET
 export async function GET(
   req: NextRequest,
-  context: { params: { id: string } }
+  { params }: { params: { id: string } }
 ) {
   try {
-    const id = context.params.id;
+    const id = params.id;
 
     if (!id) {
       return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
@@ -54,10 +54,10 @@ export async function GET(
 // ✅ PUT
 export async function PUT(
   req: NextRequest,
-  context: { params: { id: string } }
+  { params }: { params: { id: string } }
 ) {
   try {
-    const id = context.params.id;
+    const id = params.id;
 
     if (!id) {
       return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
@@ -94,10 +94,10 @@ export async function PUT(
 // ✅ DELETE
 export async function DELETE(
   req: NextRequest,
-  context: { params: { id: string } }
+  { params }: { params: { id: string } }
 ) {
   try {
-    const id = context.params.id;
+    const id = params.id;
 
     if (!id) {
       return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
