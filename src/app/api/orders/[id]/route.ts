@@ -27,11 +27,15 @@ export async function GET(
   context: { params: { id: string } }
 ) {
   try {
-    const { id } = context.params;
+    const id = context.params.id;
+
+    if (!id) {
+      return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+    }
 
     await connectDB();
 
-    const order = await Order.findById(id);
+    const order = await Order.findById(id).lean();
 
     if (!order) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -39,8 +43,9 @@ export async function GET(
 
     return NextResponse.json(order);
   } catch (error: any) {
+    console.error("GET ERROR:", error);
     return NextResponse.json(
-      { error: error.message },
+      { error: error.message || "Server error" },
       { status: 500 }
     );
   }
@@ -52,7 +57,11 @@ export async function PUT(
   context: { params: { id: string } }
 ) {
   try {
-    const { id } = context.params;
+    const id = context.params.id;
+
+    if (!id) {
+      return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+    }
 
     await connectDB();
 
@@ -70,12 +79,13 @@ export async function PUT(
         ssd: body.ssd ? Number(body.ssd) : null,
       },
       { new: true }
-    );
+    ).lean();
 
     return NextResponse.json(updated);
   } catch (error: any) {
+    console.error("PUT ERROR:", error);
     return NextResponse.json(
-      { error: error.message },
+      { error: error.message || "Server error" },
       { status: 500 }
     );
   }
@@ -87,7 +97,11 @@ export async function DELETE(
   context: { params: { id: string } }
 ) {
   try {
-    const { id } = context.params;
+    const id = context.params.id;
+
+    if (!id) {
+      return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+    }
 
     await connectDB();
 
@@ -95,8 +109,9 @@ export async function DELETE(
 
     return NextResponse.json({ message: "Deleted" });
   } catch (error: any) {
+    console.error("DELETE ERROR:", error);
     return NextResponse.json(
-      { error: error.message },
+      { error: error.message || "Server error" },
       { status: 500 }
     );
   }
