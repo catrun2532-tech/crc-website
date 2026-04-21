@@ -1,14 +1,8 @@
 import { NextResponse } from "next/server"
+import clientPromise from "@/lib/mongodb"
 import mongoose from "mongoose"
 
 export const dynamic = "force-dynamic"
-
-// connect helper (กัน connect ซ้ำ)
-async function connectDB() {
-  if (mongoose.connection.readyState === 0) {
-    await mongoose.connect(process.env.MONGODB_URI!)
-  }
-}
 
 // helper
 function normalizeStatus(status: any) {
@@ -41,10 +35,13 @@ const Order =
         service: { type: String, required: true },
         details: { type: String },
         sn: { type: String },
+
         items: { type: [String], default: [] },
         otherItem: { type: String, default: "" },
+
         ram: { type: Number, default: null },
         ssd: { type: Number, default: null },
+
         status: {
           type: String,
           enum: ["quote", "repairing", "waiting_parts", "done"],
@@ -58,7 +55,10 @@ const Order =
 // 👉 POST
 export async function POST(req: Request) {
   try {
-    await connectDB()
+    const client = await clientPromise
+    const db = client.db()
+
+    await mongoose.connect(process.env.MONGODB_URI!)
 
     const body = await req.json()
 
@@ -95,7 +95,10 @@ export async function POST(req: Request) {
 // 👉 GET
 export async function GET() {
   try {
-    await connectDB()
+    const client = await clientPromise
+    const db = client.db()
+
+    await mongoose.connect(process.env.MONGODB_URI!)
 
     const orders = await Order.find().sort({ createdAt: -1 })
 
