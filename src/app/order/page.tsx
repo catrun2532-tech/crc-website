@@ -205,7 +205,7 @@ export default function OrderPage() {
             </button>
 
             <a
-              href={`/api/orders/pdf/${o._id}`}
+              href={`/api/orders/pdf/${o._id?.toString()}`}
               target="_blank"
               className="bg-yellow-500 px-3 py-1 rounded text-black"
             >
