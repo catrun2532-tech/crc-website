@@ -1,99 +1,168 @@
-import { NextResponse } from "next/server"
-import clientPromise from "@/lib/mongodb"
-import { ObjectId } from "mongodb"
+import { NextResponse } from "next/server";
+import connectDB from "@/lib/mongodb";
+import Order from "@/models/Order";
 
-//
-// ✅ GET
-//
-export async function GET(req: Request, context: any) {
+// helper
+function normalizeStatus(status: any) {
+  if (!status) return "quote";
+
+  const clean = String(status).trim().toLowerCase();
+
+  const allowed = ["quote", "repairing", "waiting_parts", "done"];
+
+  if (!allowed.includes(clean)) {
+    throw new Error("Invalid status: " + clean);
+  }
+
+  return clean;
+}
+
+// 🔥 helper กัน items เพี้ยน
+function normalizeItems(items: any): string[] {
+  if (!Array.isArray(items)) return [];
+  return items.map((i) => String(i).trim()).filter(Boolean);
+}
+
+// ✅ GET by id + รองรับ PDF
+export async function GET(
+  req: Request,
+  context: { params: Promise<{ id: string }> }
+) {
   try {
-    const client = await clientPromise
-    const db = client.db()
+    const { id } = await context.params;
 
-    const id = context.params.id
+    await connectDB();
 
-    const order = await db
-      .collection("orders")
-      .findOne({ _id: new ObjectId(id) })
+    const order = await Order.findById(id);
 
     if (!order) {
-      return NextResponse.json(
-        { error: "Not found" },
-        { status: 404 }
-      )
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
 
-    return NextResponse.json(order)
+    const { searchParams } = new URL(req.url);
+    const isPDF = searchParams.get("pdf");
 
-  } catch (err: any) {
+    if (isPDF) {
+      const itemsText = [
+        ...(order.items || []),
+        order.otherItem || "",
+      ]
+        .filter(Boolean)
+        .join(", ");
+
+      const html = `
+        <html>
+          <head>
+            <meta charset="UTF-8" />
+            <style>
+              body { font-family: Arial; padding: 20px; }
+              .box { border: 1px solid #000; padding: 20px; }
+              h2 { text-align: center; }
+            </style>
+          </head>
+          <body>
+            <div class="box">
+              <h2>ใบงานซ่อม</h2>
+
+              <p>ชื่อลูกค้า: ${order.name || "-"}</p>
+              <p>เบอร์: ${order.phone || "-"}</p>
+              <p>SN: ${order.sn || "-"}</p>
+
+              <hr/>
+
+              <p>บริการ: ${order.service || "-"}</p>
+              <p>รายละเอียด: ${order.details || "-"}</p>
+              <p>สถานะ: ${order.status || "-"}</p>
+
+              <p>RAM: ${order.ram ? order.ram + " GB" : "-"}</p>
+              <p>SSD: ${order.ssd ? order.ssd + " GB" : "-"}</p>
+
+              <p>ของที่รับ: ${itemsText || "-"}</p>
+
+              <br/><br/>
+              <p>ลงชื่อ ________________________</p>
+            </div>
+          </body>
+        </html>
+      `;
+
+      return new Response(html, {
+        headers: {
+          "Content-Type": "text/html; charset=utf-8",
+        },
+      });
+    }
+
+    return NextResponse.json(order);
+  } catch (error: any) {
+    console.error("GET ERROR:", error.message);
+
     return NextResponse.json(
-      { error: err.message || "Server error" },
+      { error: error.message || "Server error" },
       { status: 500 }
-    )
+    );
   }
 }
 
-//
-// ✅ PUT
-//
-export async function PUT(req: Request, context: any) {
+// ✅ PUT update
+export async function PUT(
+  req: Request,
+  context: { params: Promise<{ id: string }> }
+) {
   try {
-    const client = await clientPromise
-    const db = client.db()
+    const { id } = await context.params;
 
-    const id = context.params.id
-    const body = await req.json()
+    await connectDB();
 
-    const result = await db.collection("orders").findOneAndUpdate(
-      { _id: new ObjectId(id) },
-      { $set: body },
-      { returnDocument: "after" }
-    )
+    const body = await req.json();
 
-    if (!result || !result.value) {
-      return NextResponse.json(
-        { error: "Not found" },
-        { status: 404 }
-      )
-    }
+    const status = normalizeStatus(body.status);
 
-    return NextResponse.json(result.value)
+    const updated = await Order.findByIdAndUpdate(
+      id,
+      {
+        ...body,
+        status,
 
-  } catch (err: any) {
+        // 🔥 clean data ก่อน save
+        items: normalizeItems(body.items),
+        otherItem: (body.otherItem || "").trim(),
+        ram: body.ram ? Number(body.ram) : null,
+        ssd: body.ssd ? Number(body.ssd) : null,
+      },
+      { new: true }
+    );
+
+    return NextResponse.json(updated);
+  } catch (error: any) {
+    console.error("PUT ERROR:", error.message);
+
     return NextResponse.json(
-      { error: err.message || "Server error" },
+      { error: error.message || "Server error" },
       { status: 500 }
-    )
+    );
   }
 }
 
-//
 // ✅ DELETE
-//
-export async function DELETE(req: Request, context: any) {
+export async function DELETE(
+  req: Request,
+  context: { params: Promise<{ id: string }> }
+) {
   try {
-    const client = await clientPromise
-    const db = client.db()
+    const { id } = await context.params;
 
-    const id = context.params.id
+    await connectDB();
 
-    const result = await db.collection("orders").deleteOne({
-      _id: new ObjectId(id),
-    })
+    await Order.findByIdAndDelete(id);
 
-    if (result.deletedCount === 0) {
-      return NextResponse.json(
-        { error: "Not found" },
-        { status: 404 }
-      )
-    }
+    return NextResponse.json({ message: "Deleted" });
+  } catch (error: any) {
+    console.error("DELETE ERROR:", error.message);
 
-    return NextResponse.json({ message: "Deleted" })
-
-  } catch (err: any) {
     return NextResponse.json(
-      { error: err.message || "Server error" },
+      { error: error.message || "Server error" },
       { status: 500 }
-    )
+    );
   }
 }
