@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
-import clientPromise from "@/lib/mongodb"
 import mongoose from "mongoose"
+import { connectDB } from "@/lib/mongoose"
 
 export const dynamic = "force-dynamic"
 
@@ -55,10 +55,7 @@ const Order =
 // 👉 POST
 export async function POST(req: Request) {
   try {
-    const client = await clientPromise
-    const db = client.db()
-
-    await mongoose.connect(process.env.MONGODB_URI!)
+    await connectDB()
 
     const body = await req.json()
 
@@ -85,6 +82,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ success: true, order })
 
   } catch (err: any) {
+    console.error(err)
     return NextResponse.json(
       { success: false, message: err.message },
       { status: 500 }
@@ -95,16 +93,14 @@ export async function POST(req: Request) {
 // 👉 GET
 export async function GET() {
   try {
-    const client = await clientPromise
-    const db = client.db()
-
-    await mongoose.connect(process.env.MONGODB_URI!)
+    await connectDB()
 
     const orders = await Order.find().sort({ createdAt: -1 })
 
     return NextResponse.json(orders)
 
   } catch (err: any) {
+    console.error(err)
     return NextResponse.json([], { status: 500 })
   }
 }
