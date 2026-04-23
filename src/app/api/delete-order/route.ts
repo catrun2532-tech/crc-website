@@ -1,5 +1,5 @@
 export async function GET(
-  req: Request,
+  request: Request,
   context: any
 ) {
   const { id } = context.params
