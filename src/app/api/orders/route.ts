@@ -1,26 +1,27 @@
-import { NextResponse } from "next/server"
-import mongoose from "mongoose"
-import { connectDB } from "@/lib/mongoose"
+import { NextResponse } from "next/server";
+import mongoose from "mongoose";
+import connectDB from "@/lib/mongodb";
 
-export const dynamic = "force-dynamic"
+export const dynamic = "force-dynamic";
 
-// helper
+// helper: clean + validate status
 function normalizeStatus(status: any) {
-  if (!status) return "quote"
+  if (!status) return "quote";
 
-  const clean = String(status).trim().toLowerCase()
-  const allowed = ["quote", "repairing", "waiting_parts", "done"]
+  const clean = String(status).trim().toLowerCase();
+  const allowed = ["quote", "repairing", "waiting_parts", "done"];
 
   if (!allowed.includes(clean)) {
-    throw new Error("Invalid status: " + clean)
+    throw new Error("Invalid status: " + clean);
   }
 
-  return clean
+  return clean;
 }
 
+// helper: clean items
 function normalizeItems(items: any): string[] {
-  if (!Array.isArray(items)) return []
-  return items.map((i) => String(i).trim()).filter(Boolean)
+  if (!Array.isArray(items)) return [];
+  return items.map((i) => String(i).trim()).filter(Boolean);
 }
 
 // model
@@ -36,8 +37,15 @@ const Order =
         details: { type: String },
         sn: { type: String },
 
-        items: { type: [String], default: [] },
-        otherItem: { type: String, default: "" },
+        items: {
+          type: [String],
+          default: [],
+        },
+
+        otherItem: {
+          type: String,
+          default: "",
+        },
 
         ram: { type: Number, default: null },
         ssd: { type: Number, default: null },
@@ -50,20 +58,20 @@ const Order =
       },
       { timestamps: true }
     )
-  )
+  );
 
 // 👉 POST
 export async function POST(req: Request) {
   try {
-    await connectDB()
+    await connectDB();
 
-    const body = await req.json()
+    const body = await req.json();
 
     if (!body.name || !body.phone || !body.service) {
       return NextResponse.json(
         { success: false, message: "Missing required fields" },
         { status: 400 }
-      )
+      );
     }
 
     const order = await Order.create({
@@ -72,35 +80,36 @@ export async function POST(req: Request) {
       service: body.service,
       details: body.details || "",
       sn: body.sn || "",
+
       items: normalizeItems(body.items),
       otherItem: (body.otherItem || "").trim(),
+
       ram: body.ram ? Number(body.ram) : null,
       ssd: body.ssd ? Number(body.ssd) : null,
+
       status: normalizeStatus(body.status),
-    })
+    });
 
-    return NextResponse.json({ success: true, order })
-
+    return NextResponse.json({ success: true, order });
   } catch (err: any) {
-    console.error(err)
+    console.error("❌ POST ERROR:", err);
     return NextResponse.json(
       { success: false, message: err.message },
       { status: 500 }
-    )
+    );
   }
 }
 
 // 👉 GET
 export async function GET() {
   try {
-    await connectDB()
+    await connectDB();
 
-    const orders = await Order.find().sort({ createdAt: -1 })
+    const orders = await Order.find().sort({ createdAt: -1 });
 
-    return NextResponse.json(orders)
-
+    return NextResponse.json(orders);
   } catch (err: any) {
-    console.error(err)
-    return NextResponse.json([], { status: 500 })
+    console.error("❌ GET ERROR:", err);
+    return NextResponse.json([], { status: 500 });
   }
 }
