@@ -24,7 +24,7 @@ function normalizeItems(items: any): string[] {
   return items.map((i) => String(i).trim()).filter(Boolean);
 }
 
-// model
+// model (กันซ้ำตอน hot reload)
 const Order =
   mongoose.models.Order ||
   mongoose.model(
