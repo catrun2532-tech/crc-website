@@ -1,9 +1,10 @@
+// src/app/page.tsx
 import Link from "next/link";
 import Image from "next/image";
 
 // ===================== CONFIG =====================
 const BRAND = {
-  title: "C.R.C. คอมพิวเตอร์",
+  title: "C.R.C. คอมพิวเตอร์ ",
   tagline:
     "รับซ่อมโน๊ตบุ๊ค/คอมพิวเตอร์ ทุกรุ่นทุกอาการ ลงวินโดว์ กู้ข้อมูล อัปเกรด SSD/RAM",
   facebook: "https://www.facebook.com/catruncpu",
@@ -17,12 +18,12 @@ const VIDEO = {
   src: "/video/promo.mp4",
 };
 
-const GALLERY = ["pic1.jpg", "pic2.jpg", "pic3.jpg", "pic4.jpg"];
+const GALLERY: string[] = ["pic1.jpg", "pic2.jpg", "pic3.jpg", "pic4.jpg"];
 
 const SERVICES = [
-  { name: "ลงวินโดว์ + โปรแกรมพื้นฐาน", price: "400–800 บาท" },
+  { name: "ลงวินโดว์ + โปรแกรมพื้นฐาน", price: "500–800 บาท" },
   { name: "อัปเกรด SSD (ย้ายข้อมูล)", price: "สอบถามราคา" },
-  { name: "ทำความสะอาด + เปลี่ยนซิลิโคน", price: "300–700 บาท" },
+  { name: "ทำความสะอาด + เปลี่ยนซิลิโคน", price: "400–700 บาท" },
   { name: "กู้ข้อมูล/ไฟล์หาย", price: "ประเมินก่อนซ่อม" },
 ];
 // =================================================
@@ -40,85 +41,145 @@ export default function Page() {
         <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="font-bold tracking-wide">บริษัทแคทรันซีพียู จำกัด</div>
           <nav className="hidden md:flex gap-6 text-sm text-gray-300">
-            <Link href="/order">นัดซ่อม</Link>
-            <Link href="/products">สินค้า</Link>
-            <a href="#services">บริการ/ราคา</a>
-            <a href="#contact">ติดต่อ</a>
-            <Link href="/cart">ตะกร้า</Link>
+            <Link href="/order" className="hover:text-white">
+              นัดซ่อม
+            </Link>
+            <Link href="/products" className="hover:text-white">
+              สินค้า
+            </Link>
+            <a href="#services" className="hover:text-white">
+              บริการ/ราคา
+            </a>
+            <a href="#contact" className="hover:text-white">
+              ติดต่อ
+            </a>
+            <Link href="/cart" className="hover:underline">
+              ตะกร้า
+            </Link>
           </nav>
         </div>
       </header>
 
       {/* HERO */}
-      <section className="max-w-6xl mx-auto px-4 py-20">
-        <h1 className="text-4xl md:text-6xl font-extrabold">
-          {BRAND.title}
-        </h1>
-        <p className="mt-5 text-lg text-gray-300">{BRAND.tagline}</p>
+      <section id="about" className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(255,255,255,0.08),rgba(0,0,0,0))]" />
+        <div className="max-w-6xl mx-auto px-4 py-20 relative">
+          <h1 className="text-4xl md:text-6xl font-extrabold leading-tight">
+            {BRAND.title}
+          </h1>
+          <p className="mt-5 text-lg text-gray-300 max-w-3xl">{BRAND.tagline}</p>
 
-        <div className="mt-8 flex flex-wrap gap-3">
-          <a href={BRAND.facebook} className="px-5 py-3 bg-blue-600 rounded-xl">
-            Facebook
-          </a>
-          <a href={BRAND.line} className="px-5 py-3 bg-green-600 rounded-xl">
-            LINE
-          </a>
-          <a href={`tel:${BRAND.phone}`} className="px-5 py-3 bg-pink-600 rounded-xl">
-            โทร
-          </a>
-          <a
-            href={BRAND.website}
-            target="_blank"
-            className="px-5 py-3 bg-zinc-700 rounded-xl"
-          >
-            Website
-          </a>
+          <div className="mt-8 flex flex-wrap gap-3">
+            <a
+              href={BRAND.facebook}
+              className="px-5 py-3 rounded-2xl bg-blue-600 hover:bg-blue-500 transition"
+            >
+              Facebook: catruncpu
+            </a>
+            <a
+              href={BRAND.line}
+              className="px-5 py-3 rounded-2xl bg-green-600 hover:bg-green-500 transition"
+            >
+              LINE: catruncpu
+            </a>
+            <a
+              href={`tel:${BRAND.phone}`}
+              className="px-5 py-3 rounded-2xl bg-pink-600 hover:bg-pink-500 transition"
+            >
+              โทร: 0960956981
+            </a>
 
-          {/* เพิ่มจากอีก branch */}
-          <Link
-            href="/track"
-            className="px-5 py-3 bg-yellow-400 text-black rounded-xl"
-          >
-            🔍 เช็คใบงาน
-          </Link>
+            {/* ปุ่มเช็คงาน */}
+            <Link
+              href="/track"
+              className="px-5 py-3 rounded-2xl bg-gradient-to-r from-yellow-400 to-red-500 text-black font-semibold"
+            >
+              🔍 เช็คใบงาน (ลูกค้า)
+            </Link>
+
+            
+          </div>
         </div>
       </section>
 
       {/* VIDEO */}
-      <section className="max-w-6xl mx-auto px-4 py-10">
-        <video src={VIDEO.src} controls className="w-full rounded-xl" />
+      <section id="video" className="bg-zinc-900">
+        <div className="max-w-6xl mx-auto px-4 py-12">
+          <h2 className="text-2xl font-semibold mb-4">วิดีโอแนะนำร้าน</h2>
+          <div className="w-full aspect-video rounded-2xl border border-zinc-800 overflow-hidden">
+            <video
+              className="w-full h-full object-cover"
+              src={VIDEO.src}
+              controls
+              playsInline
+            />
+          </div>
+        </div>
       </section>
 
       {/* GALLERY */}
-      <section className="max-w-6xl mx-auto px-4 py-10 grid grid-cols-2 md:grid-cols-4 gap-4">
-        {GALLERY.map((f) => (
-          <div key={f} className="relative aspect-square">
-            <Image
-              src={`/uploads/${f}`}
-              alt={f}
-              fill
-              className="object-cover rounded-xl"
-            />
-          </div>
-        ))}
+      <section id="gallery" className="max-w-6xl mx-auto px-4 py-12">
+        <h2 className="text-2xl font-semibold">ผลงาน / บรรยากาศร้าน</h2>
+        <div className="mt-6 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {GALLERY.map((f) => (
+            <div
+              key={f}
+              className="relative w-full aspect-square overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900"
+            >
+              <Image
+                src={`/uploads/${f}`}
+                alt={f}
+                fill
+                className="object-cover"
+              />
+            </div>
+          ))}
+        </div>
       </section>
 
       {/* SERVICES */}
-      <section className="max-w-6xl mx-auto px-4 py-10">
-        {SERVICES.map((s, i) => (
-          <div key={i} className="border p-4 rounded-xl mb-2">
-            <div className="flex justify-between">
-              <span>{s.name}</span>
-              <span>{s.price}</span>
-            </div>
-          </div>
-        ))}
+      <section id="services" className="bg-zinc-900">
+        <div className="max-w-6xl mx-auto px-4 py-12">
+          <h2 className="text-2xl font-semibold">บริการยอดนิยม & ราคาโดยประมาณ</h2>
+          <ul className="mt-6 grid md:grid-cols-2 gap-4">
+            {SERVICES.map((s, i) => (
+              <li
+                key={i}
+                className="rounded-2xl border border-zinc-800 bg-zinc-950/60 p-5"
+              >
+                <div className="flex justify-between">
+                  <div>{s.name}</div>
+                  <div className="text-gray-300">{s.price}</div>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
       </section>
 
       {/* CONTACT */}
-      <section className="max-w-6xl mx-auto px-4 py-10">
-        <a href={`tel:${BRAND.phone}`}>📞 {BRAND.phone}</a>
+      <section id="contact" className="max-w-6xl mx-auto px-4 py-12">
+        <h2 className="text-2xl font-semibold">ติดต่อเรา</h2>
+        <div className="mt-6 grid md:grid-cols-3 gap-4">
+          <a href={`tel:${BRAND.phone}`} className="box">📞 โทร</a>
+          <a href={BRAND.line} className="box">💬 LINE</a>
+          <a href={BRAND.facebook} className="box">👍 Facebook</a>
+        </div>
       </section>
+
+      {/* MAP */}
+      <section className="max-w-6xl mx-auto px-4 pb-14">
+        <h2 className="text-2xl font-semibold">แผนที่ร้าน</h2>
+        <iframe
+          className="w-full aspect-video rounded-2xl border border-zinc-800 mt-4"
+          src="https://www.google.com/maps?q=catruncpu&output=embed"
+        />
+      </section>
+
+      {/* FOOTER */}
+      <footer className="border-t border-zinc-900 text-center py-6 text-gray-400">
+        © {new Date().getFullYear()} C.R.C. คอมพิวเตอร์
+      </footer>
     </main>
   );
 }
