@@ -2,7 +2,9 @@ import { NextResponse } from "next/server"
 import clientPromise from "@/lib/mongodb"
 import { ObjectId } from "mongodb"
 
-// helper
+export const dynamic = "force-dynamic"
+
+// ✅ helper: validate status
 function normalizeStatus(status: any) {
   if (!status) return "quote"
 
@@ -16,31 +18,55 @@ function normalizeStatus(status: any) {
   return clean
 }
 
+// ✅ helper: clean items
 function normalizeItems(items: any): string[] {
   if (!Array.isArray(items)) return []
   return items.map((i) => String(i).trim()).filter(Boolean)
 }
 
-// ✅ GET by id
+// ✅ GET by ID
 export async function GET(
   req: Request,
   { params }: { params: { id: string } }
 ) {
   try {
+    const { id } = params
+
+    // 🔥 กัน id พัง
+    if (!id || !ObjectId.isValid(id)) {
+      return NextResponse.json(
+        { success: false, message: "Invalid ID" },
+        { status: 400 }
+      )
+    }
+
     const client = await clientPromise
     const db = client.db()
 
     const order = await db
       .collection("orders")
-      .findOne({ _id: new ObjectId(params.id) })
+      .findOne({ _id: new ObjectId(id) })
 
     if (!order) {
-      return NextResponse.json({ error: "Not found" }, { status: 404 })
+      return NextResponse.json(
+        { success: false, message: "Order not found" },
+        { status: 404 }
+      )
     }
 
-    return NextResponse.json(order)
-  } catch (error) {
-    console.error(error)
-    return NextResponse.json({ error: "Server error" }, { status: 500 })
+    return NextResponse.json({
+      success: true,
+      order,
+    })
+  } catch (error: any) {
+    console.error("❌ GET ORDER BY ID ERROR:", error)
+
+    return NextResponse.json(
+      {
+        success: false,
+        message: error.message || "Internal Server Error",
+      },
+      { status: 500 }
+    )
   }
 }
