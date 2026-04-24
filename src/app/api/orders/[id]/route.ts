@@ -4,12 +4,11 @@ import { ObjectId } from "mongodb";
 
 export async function GET(
   req: Request,
-  context: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = context.params;
+    const { id } = await context.params;
 
-    // ตรวจสอบ id
     if (!id || !ObjectId.isValid(id)) {
       return NextResponse.json(
         { success: false, message: "Invalid ID" },
@@ -17,16 +16,13 @@ export async function GET(
       );
     }
 
-    // เชื่อมต่อ DB
     const client = await clientPromise;
     const db = client.db();
 
-    // ค้นหา order
     const order = await db
       .collection("orders")
       .findOne({ _id: new ObjectId(id) });
 
-    // ไม่เจอข้อมูล
     if (!order) {
       return NextResponse.json(
         { success: false, message: "Order not found" },
@@ -34,11 +30,10 @@ export async function GET(
       );
     }
 
-    // ส่งข้อมูล
     return NextResponse.json(order);
-  } catch (error: any) {
+  } catch (err: any) {
     return NextResponse.json(
-      { success: false, message: error.message },
+      { success: false, message: err.message },
       { status: 500 }
     );
   }
